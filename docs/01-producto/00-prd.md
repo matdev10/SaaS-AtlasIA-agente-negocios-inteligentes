@@ -82,10 +82,15 @@ AtlasIA permitirá crear un asistente IA personalizado que responderá únicamen
 
 # MVP
 
-La primera versión deberá permitir:
+La primera versión permitirá:
 
-- registrar empresa
-- crear agente
-- subir documentos
-- conversar con IA
-- instalar widget
+- Registrar empresa
+- Iniciar sesión
+- Crear un agente IA
+- Configurar el agente
+- Subir documentos
+- Procesar documentos
+- Conversar con el agente
+- Publicar un widget
+- Visualizar conversaciones
+- Consultar analíticas básicas
