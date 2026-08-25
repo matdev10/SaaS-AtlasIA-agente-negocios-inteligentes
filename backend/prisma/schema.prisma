@@ -1,0 +1,342 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CompanyStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum UserRole {
+  COMPANY_ADMIN
+  COMPANY_USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+  PENDING
+}
+
+enum AgentStatus {
+  DRAFT
+  TRAINING
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum KnowledgeBaseStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum DocumentType {
+  PDF
+  DOCX
+  TXT
+  FAQ
+  MANUAL
+  POLICY
+  WEB_PAGE
+  OTHER
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PROCESSING
+  PROCESSED
+  FAILED
+  ARCHIVED
+}
+
+enum TrainingJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum ConversationChannel {
+  WIDGET
+  TEST_CHAT
+}
+
+enum MessageRole {
+  VISITOR
+  ASSISTANT
+  SYSTEM
+}
+
+enum WidgetStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PlanStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+model Company {
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String
+  contactEmail  String
+  phone         String?
+  industry      String?
+  website       String?
+  status        CompanyStatus @default(TRIAL)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  users         User[]
+  agents        Agent[]
+  conversations Conversation[]
+  subscriptions Subscription[]
+
+  @@index([status])
+  @@index([contactEmail])
+  @@map("companies")
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  companyId    String     @db.Uuid
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         UserRole   @default(COMPANY_USER)
+  status       UserStatus @default(PENDING)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  company      Company    @relation(fields: [companyId], references: [id], onDelete: Restrict)
+
+  @@index([companyId])
+  @@index([status])
+  @@index([role])
+  @@map("users")
+}
+
+model Agent {
+  id              String      @id @default(uuid()) @db.Uuid
+  companyId       String      @db.Uuid
+  name            String
+  description     String?
+  tone            String?
+  instructions    String?
+  welcomeMessage  String?
+  status          AgentStatus @default(DRAFT)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  company         Company        @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  knowledgeBase   KnowledgeBase?
+  widget          Widget?
+  conversations   Conversation[]
+
+  @@index([companyId])
+  @@index([companyId, status])
+  @@map("agents")
+}
+
+model KnowledgeBase {
+  id          String              @id @default(uuid()) @db.Uuid
+  agentId     String              @unique @db.Uuid
+  name        String
+  status      KnowledgeBaseStatus @default(ACTIVE)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  agent       Agent      @relation(fields: [agentId], references: [id], onDelete: Restrict)
+  documents   Document[]
+
+  @@index([status])
+  @@map("knowledge_bases")
+}
+
+model Document {
+  id              String         @id @default(uuid()) @db.Uuid
+  knowledgeBaseId String         @db.Uuid
+  name            String
+  type            DocumentType
+  sourceUrl       String?
+  extractedText   String?
+  status          DocumentStatus @default(UPLOADED)
+  errorMessage    String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Restrict)
+  chunks          Chunk[]
+  trainingJobs    TrainingJob[]
+
+  @@index([knowledgeBaseId])
+  @@index([knowledgeBaseId, status])
+  @@index([type])
+  @@map("documents")
+}
+
+model Chunk {
+  id         String   @id @default(uuid()) @db.Uuid
+  documentId String   @db.Uuid
+  content    String
+  sortOrder  Int
+  tokenCount Int?
+  // pgvector support is prepared here; enabling the extension happens in migrations.
+  // text-embedding-3-large uses 3072 dimensions by default.
+  embedding Unsupported("vector(3072)")?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@unique([documentId, sortOrder])
+  @@map("chunks")
+}
+
+model TrainingJob {
+  id           String            @id @default(uuid()) @db.Uuid
+  documentId   String            @db.Uuid
+  status       TrainingJobStatus @default(PENDING)
+  progress     Int               @default(0)
+  errorMessage String?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  document     Document @relation(fields: [documentId], references: [id], onDelete: Restrict)
+
+  @@index([documentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("training_jobs")
+}
+
+model Conversation {
+  id             String              @id @default(uuid()) @db.Uuid
+  companyId      String              @db.Uuid
+  agentId        String              @db.Uuid
+  channel        ConversationChannel @default(WIDGET)
+  status         ConversationStatus  @default(OPEN)
+  visitorName    String?
+  visitorContact String?
+  startedAt      DateTime            @default(now())
+  endedAt        DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  company        Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  agent          Agent     @relation(fields: [agentId], references: [id], onDelete: Restrict)
+  messages       Message[]
+
+  // The application must ensure agent.companyId matches companyId.
+  @@index([companyId])
+  @@index([agentId])
+  @@index([companyId, agentId])
+  @@index([companyId, status])
+  @@index([createdAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String      @id @default(uuid()) @db.Uuid
+  conversationId String      @db.Uuid
+  role           MessageRole
+  content        String
+  tokenCount     Int?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model Widget {
+  id              String       @id @default(uuid()) @db.Uuid
+  agentId         String       @unique @db.Uuid
+  name            String?
+  primaryColor    String?
+  welcomeMessage  String?
+  position        String?
+  logoUrl         String?
+  status          WidgetStatus @default(INACTIVE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  agent           Agent        @relation(fields: [agentId], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@map("widgets")
+}
+
+model Plan {
+  id                    String     @id @default(uuid()) @db.Uuid
+  name                  String     @unique
+  price                 Decimal    @default(0) @db.Decimal(10, 2)
+  maxUsers              Int
+  maxAgents             Int
+  maxDocuments          Int
+  maxConversations      Int
+  maxAiTokens           Int?
+  includesRag           Boolean    @default(true)
+  includesWidget        Boolean    @default(true)
+  status                PlanStatus @default(ACTIVE)
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  subscriptions         Subscription[]
+
+  @@index([status])
+  @@map("plans")
+}
+
+model Subscription {
+  id        String             @id @default(uuid()) @db.Uuid
+  companyId String             @db.Uuid
+  planId    String             @db.Uuid
+  status    SubscriptionStatus @default(TRIAL)
+  startsAt  DateTime           @default(now())
+  endsAt    DateTime?
+  renewsAt  DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  plan      Plan    @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  // Only one active subscription per company should be enforced with a partial unique index in a migration.
+  @@index([companyId])
+  @@index([planId])
+  @@index([companyId, status])
+  @@index([startsAt])
+  @@map("subscriptions")
+}
