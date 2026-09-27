@@ -9,15 +9,16 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateUserDto) {
+  async create(data: CreateUserDto, companyId: string) {
     const passwordHash = await bcrypt.hash(data.password, 12);
 
     return this.prisma.user.create({
       data: {
-        companyId: data.companyId,
+        companyId,
         name: data.name,
         email: data.email,
         passwordHash,
+        role: data.role,
       },
       select: {
         id: true,
@@ -33,9 +34,10 @@ export class UsersService {
     });
   }
 
-  async findAll() {
+  async findAll(companyId: string) {
     return this.prisma.user.findMany({
       where: {
+        companyId,
         status: {
           not: 'INACTIVE',
         },
@@ -57,9 +59,10 @@ export class UsersService {
     });
   }
 
-  async findInactive() {
+  async findInactive(companyId: string) {
     return this.prisma.user.findMany({
       where: {
+        companyId,
         status: 'INACTIVE',
       },
       select: {
@@ -79,9 +82,12 @@ export class UsersService {
     });
   }
 
-  async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
+  async findOne(id: string, companyId: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id,
+        companyId,
+      },
       select: {
         id: true,
         companyId: true,
@@ -102,8 +108,8 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, data: UpdateUserDto) {
-    await this.findOne(id);
+  async update(id: string, companyId: string, data: UpdateUserDto) {
+    await this.findOne(id, companyId);
 
     return this.prisma.user.update({
       where: { id },
@@ -122,8 +128,8 @@ export class UsersService {
     });
   }
 
-  async deactivate(id: string) {
-    await this.findOne(id);
+  async deactivate(id: string, companyId: string) {
+    await this.findOne(id, companyId);
 
     return this.prisma.user.update({
       where: { id },
@@ -144,8 +150,8 @@ export class UsersService {
     });
   }
 
-  async restore(id: string) {
-    await this.findOne(id);
+  async restore(id: string, companyId: string) {
+    await this.findOne(id, companyId);
 
     return this.prisma.user.update({
       where: { id },

@@ -1,46 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../database/prisma.service';
-import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Injectable()
 export class CompaniesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateCompanyDto) {
-    return this.prisma.company.create({
-      data,
-    });
-  }
-
-  async findAll() {
-    return this.prisma.company.findMany({
+  async findMine(companyId: string) {
+    const company = await this.prisma.company.findFirst({
       where: {
+        id: companyId,
         status: {
           not: 'ARCHIVED',
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-  }
-
-  async findArchived() {
-    return this.prisma.company.findMany({
-      where: {
-        status: 'ARCHIVED',
-      },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    });
-  }
-
-  async findOne(id: string) {
-    const company = await this.prisma.company.findUnique({
-      where: { id },
     });
 
     if (!company) {
@@ -50,32 +24,12 @@ export class CompaniesService {
     return company;
   }
 
-  async update(id: string, data: UpdateCompanyDto) {
-    await this.findOne(id);
+  async updateMine(companyId: string, data: UpdateCompanyDto) {
+    await this.findMine(companyId);
+
     return this.prisma.company.update({
-      where: { id },
+      where: { id: companyId },
       data,
     });
   }
-
-  async archive(id: string) {
-    await this.findOne(id);
-    return this.prisma.company.update({
-      where: { id },
-      data: {
-        status: 'ARCHIVED',
-      },
-    });
-  }
-
-  async restore(id: string) {
-    await this.findOne(id);
-    return this.prisma.company.update({
-      where: { id },
-      data: {
-        status: 'ACTIVE',
-      },
-    });
-  }
-
 }

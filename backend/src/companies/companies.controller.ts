@@ -1,52 +1,31 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+
+import { AuthGuard } from '../auth/auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import type { JwtPayload } from '../auth/jwt-payload.interface';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { UserRole } from '../generated/prisma/client';
 
 import { CompaniesService } from './companies.service';
-import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Controller('companies')
+@UseGuards(AuthGuard, RolesGuard)
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
-  @Post()
-  create(@Body() createCompanyDto: CreateCompanyDto) {
-    return this.companiesService.create(createCompanyDto);
+  @Get('me')
+  findMine(@CurrentUser() user: JwtPayload) {
+    return this.companiesService.findMine(user.companyId);
   }
 
-  @Get()
-  findAll() {
-    return this.companiesService.findAll();
-  }
-
-  @Get('archived')
-  findArchived() {
-    return this.companiesService.findArchived();
-  }
-  @Patch(':id/restore')
-  restore(@Param('id') id: string) {
-    return this.companiesService.restore(id);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.companiesService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto,) {
-    return this.companiesService.update(id, updateCompanyDto);
-  }
-
-  @Delete(':id')
-  archive(@Param('id') id: string) {
-    return this.companiesService.archive(id);
+  @Roles(UserRole.COMPANY_ADMIN)
+  @Patch('me')
+  updateMine(
+    @CurrentUser() user: JwtPayload,
+    @Body() updateCompanyDto: UpdateCompanyDto,
+  ) {
+    return this.companiesService.updateMine(user.companyId, updateCompanyDto);
   }
 }

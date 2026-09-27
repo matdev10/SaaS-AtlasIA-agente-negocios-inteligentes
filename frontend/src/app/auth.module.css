@@ -1,0 +1,324 @@
+/* AtlasIA auth palette — source of truth for login/register */
+.page {
+  --ink: #101820;
+  --muted: #667484;
+  --line: #e4e8ee;
+  --brand-1: #0b1d3f;
+  --brand-2: #3e0d6e;
+  --brand-3: #7e1c8a;
+  --accent: #7e1c8a;
+  --accent-deep: #3e0d6e;
+  --danger: #a33b3b;
+  --shell: #ffffff;
+  --brand-surface: radial-gradient(
+      520px 320px at 18% 18%,
+      rgb(255 255 255 / 0%),
+      transparent 55%
+    ),
+    radial-gradient(
+      480px 360px at 88% 12%,
+      rgba(164, 214, 204, 0.35),
+      #000000f5 50%
+    ),
+    linear-gradient(155deg, #0b1d3f 0%, #3e0d6e 42%, #7e1c8a 100%);
+
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 3vw, 2rem);
+  font-family: var(--font-auth-body), "Segoe UI", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(900px 420px at 10% 0%, rgba(126, 28, 138, 0.1), transparent 55%),
+    radial-gradient(700px 380px at 100% 100%, rgba(11, 29, 63, 0.08), transparent 50%),
+    #f3f5f7;
+}
+
+.shell {
+  width: min(100%, 980px);
+  min-height: min(640px, calc(100dvh - 2rem));
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  background: var(--shell);
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(16, 24, 32, 0.06);
+  box-shadow: 0 24px 60px rgba(16, 24, 32, 0.1);
+  animation: shellIn 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.shellWide {
+  min-height: min(720px, calc(100dvh - 2rem));
+}
+
+.visual {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  color: #f8f4ff;
+  background: var(--brand-surface);
+  overflow: hidden;
+}
+
+.visualGlow {
+  position: absolute;
+  inset: auto -20% -30% auto;
+  width: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.22), transparent 68%);
+  animation: glowDrift 12s ease-in-out infinite alternate;
+  z-index: -1;
+}
+
+.visualBrand {
+  margin: 0;
+  font-family: var(--font-auth-display), "Segoe UI", sans-serif;
+  font-size: clamp(2.4rem, 4.6vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+  animation: riseIn 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.visualCopy {
+  display: grid;
+  gap: 0.55rem;
+  max-width: 18ch;
+  animation: riseIn 900ms 80ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.visualEyebrow {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.82;
+}
+
+.visualHeadline {
+  margin: 0;
+  font-family: var(--font-auth-display), "Segoe UI", sans-serif;
+  font-size: clamp(1.55rem, 2.8vw, 2.05rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.panel {
+  display: grid;
+  place-items: center;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  background: #fff;
+}
+
+.panelInner {
+  width: min(100%, 360px);
+  display: grid;
+  gap: 1.35rem;
+  animation: riseIn 850ms 60ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.panelHeader {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.panelMark {
+  margin: 0;
+  font-family: var(--font-auth-display), "Segoe UI", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+}
+
+.panelTitle {
+  margin: 0;
+  font-family: var(--font-auth-display), "Segoe UI", sans-serif;
+  font-size: clamp(1.7rem, 3vw, 2rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+}
+
+.panelSupport {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.field input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.85rem 0.95rem;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 500;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.field input::placeholder {
+  color: #9aa5b2;
+  font-weight: 450;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: rgba(126, 28, 138, 0.55);
+  box-shadow: 0 0 0 4px rgba(126, 28, 138, 0.12);
+}
+
+.passwordRow {
+  position: relative;
+}
+
+.passwordRow input {
+  padding-right: 4.4rem;
+}
+
+.eyeButton {
+  position: absolute;
+  top: 50%;
+  right: 0.55rem;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+  padding: 0.35rem 0.45rem;
+  cursor: pointer;
+}
+
+.eyeButton:hover {
+  color: var(--accent-deep);
+}
+
+.submit {
+  margin-top: 0.2rem;
+  border: 0;
+  border-radius: 12px;
+  padding: 0.95rem 1.1rem;
+  background: var(--brand-surface);
+  color: #f8f4ff;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    filter 160ms ease,
+    opacity 160ms ease;
+}
+
+.submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.footer {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.footerLink {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.footerLink:hover {
+  text-decoration: underline;
+}
+
+@keyframes shellIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glowDrift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-18px, -12px, 0);
+  }
+}
+
+@media (max-width: 860px) {
+  .shell,
+  .shellWide {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .visual {
+    min-height: 220px;
+  }
+
+  .visualCopy {
+    max-width: 28ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell,
+  .visualBrand,
+  .visualCopy,
+  .panelInner,
+  .visualGlow {
+    animation: none;
+  }
+
+  .field input,
+  .submit {
+    transition: none;
+  }
+}
