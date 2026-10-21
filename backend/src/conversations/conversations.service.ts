@@ -12,10 +12,15 @@ import {
   MessageRole,
 } from '../generated/prisma/client';
 import { TestChatDto } from './dto/test-chat.dto';
+import { LlmChatService } from './llm-chat.service';
+import { composeConversationalReply } from './reply-composer';
 
 @Injectable()
 export class ConversationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly llmChat: LlmChatService,
+  ) {}
 
   async testChat(companyId: string, agentId: string, data: TestChatDto) {
     return this.chat({
@@ -53,7 +58,9 @@ export class ConversationsService {
     agentId: string;
     message: string;
     conversationId?: string;
-    channel: typeof ConversationChannel.TEST_CHAT | typeof ConversationChannel.WIDGET;
+    channel:
+      | typeof ConversationChannel.TEST_CHAT
+      | typeof ConversationChannel.WIDGET;
     requireActiveAgent: boolean;
     visitorName?: string;
     visitorContact?: string;
@@ -74,7 +81,7 @@ export class ConversationsService {
         welcomeMessage: true,
         status: true,
         company: {
-          select: { status: true },
+          select: { name: true, status: true },
         },
       },
     });
@@ -127,6 +134,16 @@ export class ConversationsService {
       conversationId = created.id;
     }
 
+    const history = await this.prisma.message.findMany({
+      where: { conversationId },
+      orderBy: { createdAt: 'asc' },
+      take: 16,
+      select: {
+        role: true,
+        content: true,
+      },
+    });
+
     await this.prisma.message.create({
       data: {
         conversationId,
@@ -138,13 +155,45 @@ export class ConversationsService {
     const contextChunks = await this.retrieveRelevantChunks(
       input.agentId,
       input.message,
+      agent.company.name,
     );
 
-    const assistantContent = this.buildGroundedReply(
-      agent.name,
-      input.message,
-      contextChunks,
-    );
+    const profile = {
+      name: agent.name,
+      tone: agent.tone,
+      instructions: agent.instructions,
+      companyName: agent.company.name,
+    };
+
+    const llmReply = await this.llmChat.generateReply({
+      agent: profile,
+      message: input.message,
+      chunks: contextChunks,
+      history: history
+        .filter(
+          (message) =>
+            message.role === MessageRole.VISITOR ||
+            message.role === MessageRole.ASSISTANT,
+        )
+        .map((message) => ({
+          role:
+            message.role === MessageRole.VISITOR
+              ? ('visitor' as const)
+              : ('assistant' as const),
+          content: message.content,
+        })),
+    });
+
+    const assistantContent =
+      llmReply ??
+      composeConversationalReply({
+        agent: profile,
+        message: input.message,
+        chunks: contextChunks,
+        hasKnowledge: contextChunks.some(
+          (chunk) => chunk.documentId !== 'company-meta',
+        ),
+      });
 
     await this.prisma.message.create({
       data: {
@@ -169,11 +218,13 @@ export class ConversationsService {
       conversationId,
       agentId: input.agentId,
       messages,
-      sources: contextChunks.map((chunk) => ({
-        chunkId: chunk.id,
-        documentId: chunk.documentId,
-        excerpt: chunk.content.slice(0, 180),
-      })),
+      sources: contextChunks
+        .filter((chunk) => chunk.documentId !== 'company-meta')
+        .map((chunk) => ({
+          chunkId: chunk.id,
+          documentId: chunk.documentId,
+          excerpt: chunk.content.slice(0, 180),
+        })),
     };
   }
 
@@ -204,7 +255,11 @@ export class ConversationsService {
     });
   }
 
-  private async retrieveRelevantChunks(agentId: string, message: string) {
+  private async retrieveRelevantChunks(
+    agentId: string,
+    message: string,
+    companyName: string,
+  ) {
     const chunks = await this.prisma.chunk.findMany({
       where: {
         document: {
@@ -220,18 +275,61 @@ export class ConversationsService {
         content: true,
       },
       take: 200,
+      orderBy: { sortOrder: 'asc' },
     });
 
-    const terms = message
-      .toLowerCase()
-      .split(/\W+/)
-      .filter((term) => term.length > 2);
+    const normalizedMessage = message.toLowerCase();
+    const asksCompanyName =
+      /\b(empresa|compa[nñ][ií]a|se llama|nombre)\b/.test(normalizedMessage);
 
-    if (terms.length === 0) {
-      return chunks.slice(0, 3);
+    const companyChunk = {
+      id: 'company-meta',
+      documentId: 'company-meta',
+      content: `La empresa se llama ${companyName}.`,
+    };
+
+    if (asksCompanyName) {
+      return [companyChunk, ...chunks.slice(0, 3)];
     }
 
-    return chunks
+    const stopwords = new Set([
+      'que',
+      'qué',
+      'como',
+      'cómo',
+      'cual',
+      'cuál',
+      'donde',
+      'dónde',
+      'cuando',
+      'cuándo',
+      'para',
+      'por',
+      'con',
+      'sin',
+      'una',
+      'uno',
+      'los',
+      'las',
+      'del',
+      'the',
+      'and',
+    ]);
+
+    const terms = normalizedMessage
+      .split(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ0-9]+/)
+      .map((term) => term.trim())
+      .filter((term) => term.length > 2 && !stopwords.has(term));
+
+    if (chunks.length === 0) {
+      return asksCompanyName ? [companyChunk] : [];
+    }
+
+    if (terms.length === 0) {
+      return chunks.slice(0, 4);
+    }
+
+    const ranked = chunks
       .map((chunk) => {
         const content = chunk.content.toLowerCase();
         const score = terms.reduce(
@@ -240,30 +338,13 @@ export class ConversationsService {
         );
         return { ...chunk, score };
       })
-      .filter((chunk) => chunk.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
-  }
+      .sort((a, b) => b.score - a.score);
 
-  private buildGroundedReply(
-    agentName: string,
-    message: string,
-    chunks: Array<{ content: string }>,
-  ) {
-    if (chunks.length === 0) {
-      return (
-        `${agentName}: no encontré información suficiente en la base de conocimiento ` +
-        `para responder “${message}”. Puedes reformular la pregunta o cargar más documentos.`
-      );
+    const matched = ranked.filter((chunk) => chunk.score > 0).slice(0, 4);
+    if (matched.length > 0) {
+      return matched;
     }
 
-    const context = chunks
-      .map((chunk, index) => `(${index + 1}) ${chunk.content}`)
-      .join('\n\n');
-
-    return (
-      `${agentName}: según la base de conocimiento disponible:\n\n${context}\n\n` +
-      `Si necesitas más detalle, indícame qué parte ampliar.`
-    );
+    return ranked.slice(0, 4);
   }
 }

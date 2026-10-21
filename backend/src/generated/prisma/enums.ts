@@ -19,6 +19,19 @@ export const CompanyStatus = {
 export type CompanyStatus = (typeof CompanyStatus)[keyof typeof CompanyStatus]
 
 
+export const OnboardingStep = {
+  WELCOME: 'WELCOME',
+  COMPANY_PROFILE: 'COMPANY_PROFILE',
+  AGENT_CONFIG: 'AGENT_CONFIG',
+  KNOWLEDGE: 'KNOWLEDGE',
+  TEST_CHAT: 'TEST_CHAT',
+  PUBLISH: 'PUBLISH',
+  COMPLETED: 'COMPLETED'
+} as const
+
+export type OnboardingStep = (typeof OnboardingStep)[keyof typeof OnboardingStep]
+
+
 export const UserRole = {
   COMPANY_ADMIN: 'COMPANY_ADMIN',
   COMPANY_USER: 'COMPANY_USER'

@@ -88,7 +88,13 @@ export const CompanyScalarFieldEnum = {
   phone: 'phone',
   industry: 'industry',
   website: 'website',
+  language: 'language',
+  timezone: 'timezone',
+  businessHours: 'businessHours',
   status: 'status',
+  onboardingStep: 'onboardingStep',
+  onboardingCompleted: 'onboardingCompleted',
+  onboardingCompletedAt: 'onboardingCompletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -222,6 +228,7 @@ export const WidgetScalarFieldEnum = {
   welcomeMessage: 'welcomeMessage',
   position: 'position',
   logoUrl: 'logoUrl',
+  allowedDomains: 'allowedDomains',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

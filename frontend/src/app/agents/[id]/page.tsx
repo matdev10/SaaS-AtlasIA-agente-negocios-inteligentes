@@ -2,7 +2,7 @@
 
 import { DM_Sans, Syne } from 'next/font/google';
 import Link from 'next/link';
-import { FormEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 import {
@@ -31,6 +31,62 @@ type ChatMessage = {
   content: string;
 };
 
+const TONE_OPTIONS = [
+  { id: 'cercano', label: 'Cercano', value: 'Cercano y amable' },
+  { id: 'profesional', label: 'Profesional', value: 'Profesional y claro' },
+  { id: 'formal', label: 'Formal', value: 'Formal y preciso' },
+  { id: 'directo', label: 'Directo', value: 'Directo y conciso' },
+  { id: 'empatico', label: 'Empático', value: 'Empático y paciente' },
+] as const;
+
+const INSTRUCTION_OPTIONS = [
+  {
+    id: 'solo-kb',
+    label: 'Solo usa la base de conocimiento',
+    text: 'Responde únicamente con información de la base de conocimiento de la empresa.',
+  },
+  {
+    id: 'sin-inventar',
+    label: 'No inventes datos',
+    text: 'Si no sabes la respuesta, dilo con claridad y ofrece derivar a un humano.',
+  },
+  {
+    id: 'respuestas-cortas',
+    label: 'Respuestas breves',
+    text: 'Prioriza respuestas cortas, claras y fáciles de leer.',
+  },
+  {
+    id: 'horarios-precios',
+    label: 'Enfocado en FAQ',
+    text: 'Prioriza horarios, precios, envíos, garantías y políticas frecuentes.',
+  },
+  {
+    id: 'español',
+    label: 'Responder en español',
+    text: 'Responde siempre en español neutro, salvo que el visitante use otro idioma.',
+  },
+] as const;
+
+const WELCOME_OPTIONS = [
+  {
+    id: 'hola',
+    label: 'Saludo simple',
+    value: 'Hola, ¿en qué puedo ayudarte?',
+  },
+  {
+    id: 'empresa',
+    label: 'Presentación',
+    value: 'Hola, soy el asistente de la empresa. ¿Qué necesitas saber?',
+  },
+  {
+    id: 'soporte',
+    label: 'Soporte',
+    value: 'Bienvenido. Puedo ayudarte con horarios, precios y políticas. ¿Cuál es tu consulta?',
+  },
+] as const;
+
+const TEXT_FILE_EXTENSIONS = ['.txt', '.md', '.csv', '.faq', '.text'];
+
 function documentStatusLabel(status: string) {
   switch (status) {
     case 'UPLOADED':
@@ -48,19 +104,49 @@ function documentStatusLabel(status: string) {
   }
 }
 
+function fileExtension(name: string) {
+  const i = name.lastIndexOf('.');
+  return i >= 0 ? name.slice(i).toLowerCase() : '';
+}
+
+function documentTypeFromFile(name: string) {
+  const ext = fileExtension(name);
+  if (ext === '.faq') return 'FAQ';
+  if (ext === '.md' || ext === '.txt' || ext === '.text' || ext === '.csv') {
+    return 'TXT';
+  }
+  return 'OTHER';
+}
+
+function buildInstructions(selectedIds: string[]) {
+  return INSTRUCTION_OPTIONS.filter((option) => selectedIds.includes(option.id))
+    .map((option) => `• ${option.text}`)
+    .join('\n');
+}
+
 export default function AgentDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const agentId = params.id;
   const user = getStoredUser();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [tone, setTone] = useState('');
+  const [selectedToneId, setSelectedToneId] = useState<string | null>(null);
+  const [selectedInstructionIds, setSelectedInstructionIds] = useState<string[]>(
+    [],
+  );
   const [instructions, setInstructions] = useState('');
   const [welcomeMessage, setWelcomeMessage] = useState('');
+  const [selectedWelcomeId, setSelectedWelcomeId] = useState<string | null>(
+    null,
+  );
   const [docName, setDocName] = useState('');
   const [docText, setDocText] = useState('');
+  const [docType, setDocType] = useState('FAQ');
+  const [selectedFileName, setSelectedFileName] = useState('');
   const [chatMessage, setChatMessage] = useState('');
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -80,8 +166,19 @@ export default function AgentDetailPage() {
     ]);
     setAgent(agentData);
     setTone(agentData.tone ?? '');
+    const matchedTone =
+      TONE_OPTIONS.find((option) => option.value === agentData.tone)?.id ?? null;
+    setSelectedToneId(matchedTone);
     setInstructions(agentData.instructions ?? '');
+    const matchedInstructions = INSTRUCTION_OPTIONS.filter((option) =>
+      (agentData.instructions ?? '').includes(option.text),
+    ).map((option) => option.id);
+    setSelectedInstructionIds(matchedInstructions);
     setWelcomeMessage(agentData.welcomeMessage ?? '');
+    const matchedWelcome =
+      WELCOME_OPTIONS.find((option) => option.value === agentData.welcomeMessage)
+        ?.id ?? null;
+    setSelectedWelcomeId(matchedWelcome);
     setDocuments(docs);
   }
 
@@ -96,6 +193,30 @@ export default function AgentDetailPage() {
       setError(err instanceof Error ? err.message : 'Error al cargar agente'),
     );
   }, [agentId, router]);
+
+  function selectTone(optionId: string) {
+    const option = TONE_OPTIONS.find((item) => item.id === optionId);
+    if (!option) return;
+    setSelectedToneId(option.id);
+    setTone(option.value);
+  }
+
+  function toggleInstruction(optionId: string) {
+    setSelectedInstructionIds((current) => {
+      const next = current.includes(optionId)
+        ? current.filter((id) => id !== optionId)
+        : [...current, optionId];
+      setInstructions(buildInstructions(next));
+      return next;
+    });
+  }
+
+  function selectWelcome(optionId: string) {
+    const option = WELCOME_OPTIONS.find((item) => item.id === optionId);
+    if (!option) return;
+    setSelectedWelcomeId(option.id);
+    setWelcomeMessage(option.value);
+  }
 
   async function saveAgent(event: FormEvent) {
     event.preventDefault();
@@ -116,27 +237,71 @@ export default function AgentDetailPage() {
     }
   }
 
+  async function readTextFile(file: File) {
+    const ext = fileExtension(file.name);
+    if (!TEXT_FILE_EXTENSIONS.includes(ext)) {
+      throw new Error(
+        'Por ahora solo se admiten archivos de texto: .txt, .md, .csv o .faq. PDF/DOCX viene después.',
+      );
+    }
+
+    if (file.size > 100_000) {
+      throw new Error('El archivo supera el límite de 100 KB para esta carga.');
+    }
+
+    const text = await file.text();
+    if (!text.trim()) {
+      throw new Error('El archivo está vacío.');
+    }
+
+    return text;
+  }
+
+  async function onFileSelected(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setError('');
+    setInfo('');
+    try {
+      const text = await readTextFile(file);
+      setSelectedFileName(file.name);
+      setDocName(file.name.replace(/\.[^.]+$/, ''));
+      setDocText(text);
+      setDocType(documentTypeFromFile(file.name));
+      setInfo(`Archivo listo: ${file.name}`);
+    } catch (err) {
+      setSelectedFileName('');
+      setError(err instanceof Error ? err.message : 'No se pudo leer el archivo');
+    }
+  }
+
   async function createDocument(event: FormEvent) {
     event.preventDefault();
     setError('');
     setInfo('');
     setUploading(true);
     try {
-      await api('/documents', {
+      const created = await api<DocumentItem>('/documents', {
         method: 'POST',
         body: JSON.stringify({
           agentId,
           name: docName,
-          type: 'FAQ',
+          type: docType,
           extractedText: docText,
         }),
       });
+      await api(`/documents/${created.id}/train`, { method: 'POST' });
       setDocName('');
       setDocText('');
-      setInfo('Documento cargado');
+      setDocType('FAQ');
+      setSelectedFileName('');
+      setInfo('Documento cargado y entrenado. Ya puedes probarlo en el chat.');
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo cargar documento');
+      await load();
     } finally {
       setUploading(false);
     }
@@ -246,7 +411,7 @@ export default function AgentDetailPage() {
             ) : null}
           </div>
           <p className={styles.heroSupport}>
-            Configura personalidad, carga conocimiento y prueba respuestas antes de
+            Elige opciones rápidas, carga conocimiento y prueba respuestas antes de
             publicar.
           </p>
           <dl className={styles.metaRow}>
@@ -284,42 +449,116 @@ export default function AgentDetailPage() {
           <div className={styles.cardHead}>
             <h2 id="config-title">Configuración del agente</h2>
             <p className={styles.cardHelp}>
-              Define tono, instrucciones y el mensaje inicial que verán tus visitantes.
+              Elige opciones y ajústalas si hace falta. Fluye más rápido sin escribir
+              todo desde cero.
             </p>
           </div>
 
           <form className={styles.form} onSubmit={saveAgent}>
-            <label className={styles.field} htmlFor="agent-tone">
-              <span>Tono</span>
-              <input
-                id="agent-tone"
-                value={tone}
-                onChange={(e) => setTone(e.target.value)}
-                placeholder="Ej. cercano, profesional, claro"
-              />
-            </label>
+            <fieldset className={styles.choiceGroup}>
+              <legend>Tono</legend>
+              <div className={styles.chipRow} role="group" aria-label="Opciones de tono">
+                {TONE_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`${styles.chip} ${
+                      selectedToneId === option.id ? styles.chipActive : ''
+                    }`}
+                    aria-pressed={selectedToneId === option.id}
+                    onClick={() => selectTone(option.id)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              <label className={styles.field} htmlFor="agent-tone">
+                <span className={styles.srOnly}>Tono personalizado</span>
+                <input
+                  id="agent-tone"
+                  value={tone}
+                  onChange={(e) => {
+                    setTone(e.target.value);
+                    setSelectedToneId(null);
+                  }}
+                  placeholder="O escribe un tono propio"
+                />
+              </label>
+            </fieldset>
 
-            <label className={styles.field} htmlFor="agent-instructions">
-              <span>Instrucciones</span>
-              <textarea
-                id="agent-instructions"
-                rows={4}
-                value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
-                placeholder="Cómo debe responder y qué límites respetar"
-              />
-            </label>
+            <fieldset className={styles.choiceGroup}>
+              <legend>Instrucciones</legend>
+              <div
+                className={styles.chipRow}
+                role="group"
+                aria-label="Opciones de instrucciones"
+              >
+                {INSTRUCTION_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`${styles.chip} ${
+                      selectedInstructionIds.includes(option.id)
+                        ? styles.chipActive
+                        : ''
+                    }`}
+                    aria-pressed={selectedInstructionIds.includes(option.id)}
+                    onClick={() => toggleInstruction(option.id)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              <label className={styles.field} htmlFor="agent-instructions">
+                <span className={styles.srOnly}>Instrucciones editables</span>
+                <textarea
+                  id="agent-instructions"
+                  rows={5}
+                  value={instructions}
+                  onChange={(e) => {
+                    setInstructions(e.target.value);
+                    setSelectedInstructionIds([]);
+                  }}
+                  placeholder="Selecciona opciones arriba o escribe tus propias reglas"
+                />
+              </label>
+            </fieldset>
 
-            <label className={styles.field} htmlFor="agent-welcome">
-              <span>Mensaje de bienvenida</span>
-              <textarea
-                id="agent-welcome"
-                rows={3}
-                value={welcomeMessage}
-                onChange={(e) => setWelcomeMessage(e.target.value)}
-                placeholder="Hola, ¿en qué puedo ayudarte?"
-              />
-            </label>
+            <fieldset className={styles.choiceGroup}>
+              <legend>Mensaje de bienvenida</legend>
+              <div
+                className={styles.chipRow}
+                role="group"
+                aria-label="Opciones de bienvenida"
+              >
+                {WELCOME_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`${styles.chip} ${
+                      selectedWelcomeId === option.id ? styles.chipActive : ''
+                    }`}
+                    aria-pressed={selectedWelcomeId === option.id}
+                    onClick={() => selectWelcome(option.id)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              <label className={styles.field} htmlFor="agent-welcome">
+                <span className={styles.srOnly}>Mensaje de bienvenida editable</span>
+                <textarea
+                  id="agent-welcome"
+                  rows={3}
+                  value={welcomeMessage}
+                  onChange={(e) => {
+                    setWelcomeMessage(e.target.value);
+                    setSelectedWelcomeId(null);
+                  }}
+                  placeholder="O personaliza el saludo"
+                />
+              </label>
+            </fieldset>
 
             <div className={styles.actions}>
               <button
@@ -353,11 +592,39 @@ export default function AgentDetailPage() {
           <div className={styles.cardHead}>
             <h2 id="docs-title">Documentos</h2>
             <p className={styles.cardHelp}>
-              Carga FAQ o texto para entrenar la base de conocimiento de este agente.
+              Elige un archivo, revisa el contenido y pulsa “Cargar y entrenar”.
+              Solo entonces el chat podrá usarlo.
             </p>
           </div>
 
           <form className={styles.form} onSubmit={createDocument}>
+            <div className={styles.dropzone}>
+              <input
+                ref={fileInputRef}
+                id="doc-file"
+                type="file"
+                className={styles.fileInput}
+                accept=".txt,.md,.csv,.faq,.text,text/plain,text/markdown,text/csv"
+                onChange={onFileSelected}
+              />
+              <p className={styles.dropzoneTitle}>Cargar archivo</p>
+              <p className={styles.cardHelp}>
+                Formatos actuales: TXT, MD, CSV, FAQ. PDF/DOCX se agregará después.
+              </p>
+              {selectedFileName ? (
+                <p className={styles.fileName}>
+                  Listo para cargar: {selectedFileName}. Pulsa el botón de abajo.
+                </p>
+              ) : null}
+              <button
+                type="button"
+                className={styles.btnSecondary}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Elegir archivo
+              </button>
+            </div>
+
             <label className={styles.field} htmlFor="doc-name">
               <span>Nombre</span>
               <input
@@ -369,6 +636,21 @@ export default function AgentDetailPage() {
               />
             </label>
 
+            <label className={styles.field} htmlFor="doc-type">
+              <span>Tipo</span>
+              <select
+                id="doc-type"
+                value={docType}
+                onChange={(e) => setDocType(e.target.value)}
+              >
+                <option value="FAQ">FAQ</option>
+                <option value="TXT">TXT</option>
+                <option value="MANUAL">Manual</option>
+                <option value="POLICY">Política</option>
+                <option value="OTHER">Otro</option>
+              </select>
+            </label>
+
             <label className={styles.field} htmlFor="doc-content">
               <span>Contenido</span>
               <textarea
@@ -377,16 +659,16 @@ export default function AgentDetailPage() {
                 value={docText}
                 onChange={(e) => setDocText(e.target.value)}
                 required
-                placeholder="Pega aquí el texto o las preguntas frecuentes"
+                placeholder="Se completa al subir un archivo, o puedes pegar texto aquí"
               />
             </label>
 
             <button
               type="submit"
               className={styles.btnPrimary}
-              disabled={uploading}
+              disabled={uploading || !docName.trim() || !docText.trim()}
             >
-              {uploading ? 'Cargando…' : 'Cargar FAQ / texto'}
+              {uploading ? 'Cargando y entrenando…' : 'Cargar y entrenar'}
             </button>
           </form>
 
@@ -395,8 +677,8 @@ export default function AgentDetailPage() {
               <div className={styles.emptyState}>
                 <p className={styles.emptyTitle}>Todavía no hay documentos</p>
                 <p className={styles.cardHelp}>
-                  Cuando cargues el primero, aparecerá aquí con su estado de
-                  procesamiento.
+                  Elegir un archivo no alcanza: hay que pulsar “Cargar y entrenar”.
+                  Cuando esté listo, aparecerá aquí como Procesado.
                 </p>
               </div>
             ) : (
@@ -411,14 +693,16 @@ export default function AgentDetailPage() {
                       </span>
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    className={styles.btnSecondary}
-                    onClick={() => trainDocument(doc.id)}
-                    disabled={trainingId === doc.id}
-                  >
-                    {trainingId === doc.id ? 'Entrenando…' : 'Entrenar'}
-                  </button>
+                  {doc.status !== 'PROCESSED' ? (
+                    <button
+                      type="button"
+                      className={styles.btnSecondary}
+                      onClick={() => trainDocument(doc.id)}
+                      disabled={trainingId === doc.id}
+                    >
+                      {trainingId === doc.id ? 'Entrenando…' : 'Entrenar'}
+                    </button>
+                  ) : null}
                 </div>
               ))
             )}

@@ -29,4 +29,19 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsUrl()
   website?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  language?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  timezone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  businessHours?: string;
 }

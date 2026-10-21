@@ -15,6 +15,16 @@ enum CompanyStatus {
   ARCHIVED
 }
 
+enum OnboardingStep {
+  WELCOME
+  COMPANY_PROFILE
+  AGENT_CONFIG
+  KNOWLEDGE
+  TEST_CHAT
+  PUBLISH
+  COMPLETED
+}
+
 enum UserRole {
   COMPANY_ADMIN
   COMPANY_USER
@@ -101,15 +111,21 @@ enum SubscriptionStatus {
 }
 
 model Company {
-  id            String         @id @default(uuid()) @db.Uuid
-  name          String
-  contactEmail  String
-  phone         String?
-  industry      String?
-  website       String?
-  status        CompanyStatus @default(TRIAL)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                    String         @id @default(uuid()) @db.Uuid
+  name                  String
+  contactEmail          String
+  phone                 String?
+  industry              String?
+  website               String?
+  language              String?
+  timezone              String?
+  businessHours         String?
+  status                CompanyStatus  @default(TRIAL)
+  onboardingStep        OnboardingStep @default(WELCOME)
+  onboardingCompleted   Boolean        @default(false)
+  onboardingCompletedAt DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
 
   users         User[]
   agents        Agent[]
@@ -118,6 +134,7 @@ model Company {
 
   @@index([status])
   @@index([contactEmail])
+  @@index([onboardingStep])
   @@map("companies")
 }
 
@@ -288,6 +305,7 @@ model Widget {
   welcomeMessage  String?
   position        String?
   logoUrl         String?
+  allowedDomains  String[]     @default([])
   status          WidgetStatus @default(INACTIVE)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt

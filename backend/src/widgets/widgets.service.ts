@@ -18,6 +18,7 @@ const widgetSelect = {
   welcomeMessage: true,
   position: true,
   logoUrl: true,
+  allowedDomains: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -52,6 +53,10 @@ export class WidgetsService {
   ) {
     await this.assertAgentBelongsToCompany(agentId, companyId);
 
+    const allowedDomains = data.allowedDomains
+      ?.map((domain) => domain.trim())
+      .filter(Boolean);
+
     return this.prisma.widget.upsert({
       where: { agentId },
       create: {
@@ -61,9 +66,13 @@ export class WidgetsService {
         welcomeMessage: data.welcomeMessage,
         position: data.position ?? 'bottom-right',
         logoUrl: data.logoUrl,
+        allowedDomains: allowedDomains ?? [],
         status: data.status ?? WidgetStatus.INACTIVE,
       },
-      update: data,
+      update: {
+        ...data,
+        ...(allowedDomains ? { allowedDomains } : {}),
+      },
       select: widgetSelect,
     });
   }

@@ -1,4 +1,12 @@
-import { IsEnum, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+} from 'class-validator';
 
 import { WidgetStatus } from '../../generated/prisma/client';
 
@@ -26,6 +34,13 @@ export class UpsertWidgetDto {
   @IsOptional()
   @IsUrl()
   logoUrl?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(200, { each: true })
+  allowedDomains?: string[];
 
   @IsOptional()
   @IsEnum(WidgetStatus)

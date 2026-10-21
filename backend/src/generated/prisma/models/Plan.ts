@@ -575,10 +575,6 @@ export type DecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type EnumPlanStatusFieldUpdateOperationsInput = {
   set?: $Enums.PlanStatus
 }

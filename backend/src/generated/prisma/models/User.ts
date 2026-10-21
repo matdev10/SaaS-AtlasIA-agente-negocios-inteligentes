@@ -477,10 +477,6 @@ export type EnumUserStatusFieldUpdateOperationsInput = {
   set?: $Enums.UserStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type UserCreateWithoutCompanyInput = {
   id?: string
   name: string

@@ -31,7 +31,13 @@ export type CompanyMinAggregateOutputType = {
   phone: string | null
   industry: string | null
   website: string | null
+  language: string | null
+  timezone: string | null
+  businessHours: string | null
   status: $Enums.CompanyStatus | null
+  onboardingStep: $Enums.OnboardingStep | null
+  onboardingCompleted: boolean | null
+  onboardingCompletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -43,7 +49,13 @@ export type CompanyMaxAggregateOutputType = {
   phone: string | null
   industry: string | null
   website: string | null
+  language: string | null
+  timezone: string | null
+  businessHours: string | null
   status: $Enums.CompanyStatus | null
+  onboardingStep: $Enums.OnboardingStep | null
+  onboardingCompleted: boolean | null
+  onboardingCompletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -55,7 +67,13 @@ export type CompanyCountAggregateOutputType = {
   phone: number
   industry: number
   website: number
+  language: number
+  timezone: number
+  businessHours: number
   status: number
+  onboardingStep: number
+  onboardingCompleted: number
+  onboardingCompletedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -69,7 +87,13 @@ export type CompanyMinAggregateInputType = {
   phone?: true
   industry?: true
   website?: true
+  language?: true
+  timezone?: true
+  businessHours?: true
   status?: true
+  onboardingStep?: true
+  onboardingCompleted?: true
+  onboardingCompletedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -81,7 +105,13 @@ export type CompanyMaxAggregateInputType = {
   phone?: true
   industry?: true
   website?: true
+  language?: true
+  timezone?: true
+  businessHours?: true
   status?: true
+  onboardingStep?: true
+  onboardingCompleted?: true
+  onboardingCompletedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -93,7 +123,13 @@ export type CompanyCountAggregateInputType = {
   phone?: true
   industry?: true
   website?: true
+  language?: true
+  timezone?: true
+  businessHours?: true
   status?: true
+  onboardingStep?: true
+  onboardingCompleted?: true
+  onboardingCompletedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -178,7 +214,13 @@ export type CompanyGroupByOutputType = {
   phone: string | null
   industry: string | null
   website: string | null
+  language: string | null
+  timezone: string | null
+  businessHours: string | null
   status: $Enums.CompanyStatus
+  onboardingStep: $Enums.OnboardingStep
+  onboardingCompleted: boolean
+  onboardingCompletedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: CompanyCountAggregateOutputType | null
@@ -211,7 +253,13 @@ export type CompanyWhereInput = {
   phone?: Prisma.StringNullableFilter<"Company"> | string | null
   industry?: Prisma.StringNullableFilter<"Company"> | string | null
   website?: Prisma.StringNullableFilter<"Company"> | string | null
+  language?: Prisma.StringNullableFilter<"Company"> | string | null
+  timezone?: Prisma.StringNullableFilter<"Company"> | string | null
+  businessHours?: Prisma.StringNullableFilter<"Company"> | string | null
   status?: Prisma.EnumCompanyStatusFilter<"Company"> | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFilter<"Company"> | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFilter<"Company"> | boolean
+  onboardingCompletedAt?: Prisma.DateTimeNullableFilter<"Company"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Company"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Company"> | Date | string
   users?: Prisma.UserListRelationFilter
@@ -227,7 +275,13 @@ export type CompanyOrderByWithRelationInput = {
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   industry?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
+  language?: Prisma.SortOrderInput | Prisma.SortOrder
+  timezone?: Prisma.SortOrderInput | Prisma.SortOrder
+  businessHours?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  onboardingStep?: Prisma.SortOrder
+  onboardingCompleted?: Prisma.SortOrder
+  onboardingCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   users?: Prisma.UserOrderByRelationAggregateInput
@@ -246,7 +300,13 @@ export type CompanyWhereUniqueInput = Prisma.AtLeast<{
   phone?: Prisma.StringNullableFilter<"Company"> | string | null
   industry?: Prisma.StringNullableFilter<"Company"> | string | null
   website?: Prisma.StringNullableFilter<"Company"> | string | null
+  language?: Prisma.StringNullableFilter<"Company"> | string | null
+  timezone?: Prisma.StringNullableFilter<"Company"> | string | null
+  businessHours?: Prisma.StringNullableFilter<"Company"> | string | null
   status?: Prisma.EnumCompanyStatusFilter<"Company"> | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFilter<"Company"> | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFilter<"Company"> | boolean
+  onboardingCompletedAt?: Prisma.DateTimeNullableFilter<"Company"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Company"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Company"> | Date | string
   users?: Prisma.UserListRelationFilter
@@ -262,7 +322,13 @@ export type CompanyOrderByWithAggregationInput = {
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   industry?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
+  language?: Prisma.SortOrderInput | Prisma.SortOrder
+  timezone?: Prisma.SortOrderInput | Prisma.SortOrder
+  businessHours?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  onboardingStep?: Prisma.SortOrder
+  onboardingCompleted?: Prisma.SortOrder
+  onboardingCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.CompanyCountOrderByAggregateInput
@@ -280,7 +346,13 @@ export type CompanyScalarWhereWithAggregatesInput = {
   phone?: Prisma.StringNullableWithAggregatesFilter<"Company"> | string | null
   industry?: Prisma.StringNullableWithAggregatesFilter<"Company"> | string | null
   website?: Prisma.StringNullableWithAggregatesFilter<"Company"> | string | null
+  language?: Prisma.StringNullableWithAggregatesFilter<"Company"> | string | null
+  timezone?: Prisma.StringNullableWithAggregatesFilter<"Company"> | string | null
+  businessHours?: Prisma.StringNullableWithAggregatesFilter<"Company"> | string | null
   status?: Prisma.EnumCompanyStatusWithAggregatesFilter<"Company"> | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepWithAggregatesFilter<"Company"> | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolWithAggregatesFilter<"Company"> | boolean
+  onboardingCompletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Company"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Company"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Company"> | Date | string
 }
@@ -292,7 +364,13 @@ export type CompanyCreateInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutCompanyInput
@@ -308,7 +386,13 @@ export type CompanyUncheckedCreateInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutCompanyInput
@@ -324,7 +408,13 @@ export type CompanyUpdateInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutCompanyNestedInput
@@ -340,7 +430,13 @@ export type CompanyUncheckedUpdateInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutCompanyNestedInput
@@ -356,7 +452,13 @@ export type CompanyCreateManyInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -368,7 +470,13 @@ export type CompanyUpdateManyMutationInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -380,7 +488,13 @@ export type CompanyUncheckedUpdateManyInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -392,7 +506,13 @@ export type CompanyCountOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   industry?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  timezone?: Prisma.SortOrder
+  businessHours?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  onboardingStep?: Prisma.SortOrder
+  onboardingCompleted?: Prisma.SortOrder
+  onboardingCompletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -404,7 +524,13 @@ export type CompanyMaxOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   industry?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  timezone?: Prisma.SortOrder
+  businessHours?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  onboardingStep?: Prisma.SortOrder
+  onboardingCompleted?: Prisma.SortOrder
+  onboardingCompletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -416,7 +542,13 @@ export type CompanyMinOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   industry?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  timezone?: Prisma.SortOrder
+  businessHours?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  onboardingStep?: Prisma.SortOrder
+  onboardingCompleted?: Prisma.SortOrder
+  onboardingCompletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -436,6 +568,18 @@ export type NullableStringFieldUpdateOperationsInput = {
 
 export type EnumCompanyStatusFieldUpdateOperationsInput = {
   set?: $Enums.CompanyStatus
+}
+
+export type EnumOnboardingStepFieldUpdateOperationsInput = {
+  set?: $Enums.OnboardingStep
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -505,7 +649,13 @@ export type CompanyCreateWithoutUsersInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   agents?: Prisma.AgentCreateNestedManyWithoutCompanyInput
@@ -520,7 +670,13 @@ export type CompanyUncheckedCreateWithoutUsersInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   agents?: Prisma.AgentUncheckedCreateNestedManyWithoutCompanyInput
@@ -551,7 +707,13 @@ export type CompanyUpdateWithoutUsersInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   agents?: Prisma.AgentUpdateManyWithoutCompanyNestedInput
@@ -566,7 +728,13 @@ export type CompanyUncheckedUpdateWithoutUsersInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   agents?: Prisma.AgentUncheckedUpdateManyWithoutCompanyNestedInput
@@ -581,7 +749,13 @@ export type CompanyCreateWithoutAgentsInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutCompanyInput
@@ -596,7 +770,13 @@ export type CompanyUncheckedCreateWithoutAgentsInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutCompanyInput
@@ -627,7 +807,13 @@ export type CompanyUpdateWithoutAgentsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutCompanyNestedInput
@@ -642,7 +828,13 @@ export type CompanyUncheckedUpdateWithoutAgentsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutCompanyNestedInput
@@ -657,7 +849,13 @@ export type CompanyCreateWithoutConversationsInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutCompanyInput
@@ -672,7 +870,13 @@ export type CompanyUncheckedCreateWithoutConversationsInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutCompanyInput
@@ -703,7 +907,13 @@ export type CompanyUpdateWithoutConversationsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutCompanyNestedInput
@@ -718,7 +928,13 @@ export type CompanyUncheckedUpdateWithoutConversationsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutCompanyNestedInput
@@ -733,7 +949,13 @@ export type CompanyCreateWithoutSubscriptionsInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutCompanyInput
@@ -748,7 +970,13 @@ export type CompanyUncheckedCreateWithoutSubscriptionsInput = {
   phone?: string | null
   industry?: string | null
   website?: string | null
+  language?: string | null
+  timezone?: string | null
+  businessHours?: string | null
   status?: $Enums.CompanyStatus
+  onboardingStep?: $Enums.OnboardingStep
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutCompanyInput
@@ -779,7 +1007,13 @@ export type CompanyUpdateWithoutSubscriptionsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutCompanyNestedInput
@@ -794,7 +1028,13 @@ export type CompanyUncheckedUpdateWithoutSubscriptionsInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  businessHours?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumCompanyStatusFieldUpdateOperationsInput | $Enums.CompanyStatus
+  onboardingStep?: Prisma.EnumOnboardingStepFieldUpdateOperationsInput | $Enums.OnboardingStep
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutCompanyNestedInput
@@ -867,7 +1107,13 @@ export type CompanySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   phone?: boolean
   industry?: boolean
   website?: boolean
+  language?: boolean
+  timezone?: boolean
+  businessHours?: boolean
   status?: boolean
+  onboardingStep?: boolean
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   users?: boolean | Prisma.Company$usersArgs<ExtArgs>
@@ -884,7 +1130,13 @@ export type CompanySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   phone?: boolean
   industry?: boolean
   website?: boolean
+  language?: boolean
+  timezone?: boolean
+  businessHours?: boolean
   status?: boolean
+  onboardingStep?: boolean
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["company"]>
@@ -896,7 +1148,13 @@ export type CompanySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   phone?: boolean
   industry?: boolean
   website?: boolean
+  language?: boolean
+  timezone?: boolean
+  businessHours?: boolean
   status?: boolean
+  onboardingStep?: boolean
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["company"]>
@@ -908,12 +1166,18 @@ export type CompanySelectScalar = {
   phone?: boolean
   industry?: boolean
   website?: boolean
+  language?: boolean
+  timezone?: boolean
+  businessHours?: boolean
   status?: boolean
+  onboardingStep?: boolean
+  onboardingCompleted?: boolean
+  onboardingCompletedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CompanyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "contactEmail" | "phone" | "industry" | "website" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["company"]>
+export type CompanyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "contactEmail" | "phone" | "industry" | "website" | "language" | "timezone" | "businessHours" | "status" | "onboardingStep" | "onboardingCompleted" | "onboardingCompletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["company"]>
 export type CompanyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | Prisma.Company$usersArgs<ExtArgs>
   agents?: boolean | Prisma.Company$agentsArgs<ExtArgs>
@@ -939,7 +1203,13 @@ export type $CompanyPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     phone: string | null
     industry: string | null
     website: string | null
+    language: string | null
+    timezone: string | null
+    businessHours: string | null
     status: $Enums.CompanyStatus
+    onboardingStep: $Enums.OnboardingStep
+    onboardingCompleted: boolean
+    onboardingCompletedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["company"]>
@@ -1375,7 +1645,13 @@ export interface CompanyFieldRefs {
   readonly phone: Prisma.FieldRef<"Company", 'String'>
   readonly industry: Prisma.FieldRef<"Company", 'String'>
   readonly website: Prisma.FieldRef<"Company", 'String'>
+  readonly language: Prisma.FieldRef<"Company", 'String'>
+  readonly timezone: Prisma.FieldRef<"Company", 'String'>
+  readonly businessHours: Prisma.FieldRef<"Company", 'String'>
   readonly status: Prisma.FieldRef<"Company", 'CompanyStatus'>
+  readonly onboardingStep: Prisma.FieldRef<"Company", 'OnboardingStep'>
+  readonly onboardingCompleted: Prisma.FieldRef<"Company", 'Boolean'>
+  readonly onboardingCompletedAt: Prisma.FieldRef<"Company", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Company", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Company", 'DateTime'>
 }

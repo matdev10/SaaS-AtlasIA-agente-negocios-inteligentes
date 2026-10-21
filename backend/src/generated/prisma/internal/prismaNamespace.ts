@@ -1362,7 +1362,13 @@ export const CompanyScalarFieldEnum = {
   phone: 'phone',
   industry: 'industry',
   website: 'website',
+  language: 'language',
+  timezone: 'timezone',
+  businessHours: 'businessHours',
   status: 'status',
+  onboardingStep: 'onboardingStep',
+  onboardingCompleted: 'onboardingCompleted',
+  onboardingCompletedAt: 'onboardingCompletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1496,6 +1502,7 @@ export const WidgetScalarFieldEnum = {
   welcomeMessage: 'welcomeMessage',
   position: 'position',
   logoUrl: 'logoUrl',
+  allowedDomains: 'allowedDomains',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1593,6 +1600,27 @@ export type EnumCompanyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'CompanyStatus[]'
  */
 export type ListEnumCompanyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CompanyStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'OnboardingStep'
+ */
+export type EnumOnboardingStepFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OnboardingStep'>
+    
+
+
+/**
+ * Reference to a field of type 'OnboardingStep[]'
+ */
+export type ListEnumOnboardingStepFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OnboardingStep[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -1789,13 +1817,6 @@ export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'Decimal[]'
  */
 export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
