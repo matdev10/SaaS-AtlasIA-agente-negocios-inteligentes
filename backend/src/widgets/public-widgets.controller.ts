@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
 
 import { PublicWidgetChatDto } from './dto/public-widget-chat.dto';
 import { WidgetsService } from './widgets.service';
@@ -16,7 +16,13 @@ export class PublicWidgetsController {
   publicChat(
     @Param('widgetId') widgetId: string,
     @Body() publicWidgetChatDto: PublicWidgetChatDto,
+    @Headers('origin') origin?: string,
+    @Headers('referer') referer?: string,
   ) {
-    return this.widgetsService.publicChat(widgetId, publicWidgetChatDto);
+    return this.widgetsService.publicChat(
+      widgetId,
+      publicWidgetChatDto,
+      origin || referer,
+    );
   }
 }

@@ -92,3 +92,37 @@ export async function advanceOnboarding(
     select: onboardingSelect,
   });
 }
+
+/** Avanza solo si el paso actual coincide; si aún no llegó, no falla. */
+export async function softAdvanceOnboarding(
+  prisma: PrismaService,
+  companyId: string,
+  expectedCurrentStep: OnboardingStep,
+  nextStep: OnboardingStep,
+) {
+  try {
+    return await advanceOnboarding(
+      prisma,
+      companyId,
+      expectedCurrentStep,
+      nextStep,
+    );
+  } catch (error) {
+    if (error instanceof ConflictException) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export function isAgentConfigured(input: {
+  tone?: string | null;
+  instructions?: string | null;
+  welcomeMessage?: string | null;
+}) {
+  return Boolean(
+    input.tone?.trim() &&
+      input.instructions?.trim() &&
+      input.welcomeMessage?.trim(),
+  );
+}

@@ -4,6 +4,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 
+import { softAdvanceOnboarding } from '../companies/onboarding';
 import { PrismaService } from '../database/prisma.service';
 import {
   ConversationChannel,
@@ -11,6 +12,7 @@ import {
   DocumentStatus,
   MessageRole,
 } from '../generated/prisma/client';
+import { OnboardingStep } from '../generated/prisma/enums';
 import { TestChatDto } from './dto/test-chat.dto';
 import { LlmChatService } from './llm-chat.service';
 import { composeConversationalReply } from './reply-composer';
@@ -202,6 +204,15 @@ export class ConversationsService {
         content: assistantContent,
       },
     });
+
+    if (input.channel === ConversationChannel.TEST_CHAT) {
+      await softAdvanceOnboarding(
+        this.prisma,
+        input.companyId,
+        OnboardingStep.KNOWLEDGE,
+        OnboardingStep.TEST_CHAT,
+      );
+    }
 
     const messages = await this.prisma.message.findMany({
       where: { conversationId },

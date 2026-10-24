@@ -4,8 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import {
+  isAgentConfigured,
+  softAdvanceOnboarding,
+} from '../companies/onboarding';
 import { PrismaService } from '../database/prisma.service';
 import { AgentStatus } from '../generated/prisma/client';
+import { OnboardingStep } from '../generated/prisma/enums';
 import { CreateAgentDto } from './dto/create-agent.dto';
 import { UpdateAgentDto } from './dto/update-agent.dto';
 
@@ -84,13 +89,30 @@ export class AgentsService {
   }
 
   async update(id: string, companyId: string, data: UpdateAgentDto) {
-    await this.findOne(id, companyId);
+    const current = await this.findOne(id, companyId);
 
-    return this.prisma.agent.update({
+    const updated = await this.prisma.agent.update({
       where: { id },
       data,
       select: agentSelect,
     });
+
+    const configured = isAgentConfigured({
+      tone: updated.tone ?? current.tone,
+      instructions: updated.instructions ?? current.instructions,
+      welcomeMessage: updated.welcomeMessage ?? current.welcomeMessage,
+    });
+
+    if (configured) {
+      await softAdvanceOnboarding(
+        this.prisma,
+        companyId,
+        OnboardingStep.COMPANY_PROFILE,
+        OnboardingStep.AGENT_CONFIG,
+      );
+    }
+
+    return updated;
   }
 
   async archive(id: string, companyId: string) {

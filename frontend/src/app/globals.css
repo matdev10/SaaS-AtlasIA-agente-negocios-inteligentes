@@ -3,7 +3,8 @@
   --brand-1: #0b1d3f;
   --brand-2: #3e0d6e;
   --brand-3: #7e1c8a;
-  --brand-surface: radial-gradient(
+  --brand-surface:
+    radial-gradient(
       520px 320px at 18% 18%,
       rgb(255 255 255 / 0%),
       transparent 55%
@@ -13,7 +14,7 @@
       rgba(164, 214, 204, 0.35),
       #000000f5 50%
     ),
-    linear-gradient(155deg, #0b1d3f 0%, #3e0d6e 42%, #7e1c8a 100%);
+    linear-gradient(155deg, #0b1d3f 0%, #1b1b1b 42%, #020202 100%);
   --bg: #f3f5f7;
   --ink: #101820;
   --muted: #667484;
@@ -36,7 +37,11 @@ body {
   margin: 0;
   min-height: 100%;
   background:
-    radial-gradient(circle at top left, rgba(126, 28, 138, 0.1), transparent 28%),
+    radial-gradient(
+      circle at top left,
+      rgba(126, 28, 138, 0.1),
+      transparent 28%
+    ),
     linear-gradient(180deg, #f7f5fb 0%, var(--bg) 100%);
   color: var(--ink);
 }

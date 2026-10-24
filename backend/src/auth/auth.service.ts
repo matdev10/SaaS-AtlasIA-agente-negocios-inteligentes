@@ -25,8 +25,10 @@ export class AuthService {
   ) {}
 
   async register(data: RegisterDto) {
+    const email = data.email.trim().toLowerCase();
+
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: data.email },
+      where: { email },
       select: { id: true },
     });
 
@@ -58,7 +60,7 @@ export class AuthService {
         const company = await tx.company.create({
           data: {
             name: data.companyName,
-            contactEmail: data.email,
+            contactEmail: email,
             status: 'TRIAL',
           },
         });
@@ -67,7 +69,7 @@ export class AuthService {
           data: {
             companyId: company.id,
             name: data.adminName,
-            email: data.email,
+            email,
             passwordHash,
             role: UserRole.COMPANY_ADMIN,
             status: UserStatus.ACTIVE,
@@ -113,9 +115,11 @@ export class AuthService {
   }
 
   async login(data: LoginDto) {
+    const email = data.email.trim().toLowerCase();
+
     const user = await this.prisma.user.findUnique({
       where: {
-        email: data.email,
+        email,
       },
     });
 

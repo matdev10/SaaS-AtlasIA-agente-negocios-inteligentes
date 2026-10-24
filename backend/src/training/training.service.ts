@@ -4,11 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { softAdvanceOnboarding } from '../companies/onboarding';
 import { PrismaService } from '../database/prisma.service';
 import {
   DocumentStatus,
   TrainingJobStatus,
 } from '../generated/prisma/client';
+import { OnboardingStep } from '../generated/prisma/enums';
 import { chunkText } from './chunk-text';
 
 @Injectable()
@@ -92,6 +94,13 @@ export class TrainingService {
           status: DocumentStatus.PROCESSED,
         },
       });
+
+      await softAdvanceOnboarding(
+        this.prisma,
+        companyId,
+        OnboardingStep.AGENT_CONFIG,
+        OnboardingStep.KNOWLEDGE,
+      );
 
       return this.prisma.trainingJob.update({
         where: { id: job.id },
