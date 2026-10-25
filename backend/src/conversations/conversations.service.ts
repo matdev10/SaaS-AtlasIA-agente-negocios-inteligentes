@@ -15,6 +15,7 @@ import {
 import { OnboardingStep } from '../generated/prisma/enums';
 import { TestChatDto } from './dto/test-chat.dto';
 import { LlmChatService } from './llm-chat.service';
+import { rankKnowledgeChunks } from './knowledge-match';
 import { composeConversationalReply } from './reply-composer';
 
 @Injectable()
@@ -154,11 +155,12 @@ export class ConversationsService {
       },
     });
 
-    const contextChunks = await this.retrieveRelevantChunks(
+    const retrieved = await this.retrieveRelevantChunks(
       input.agentId,
       input.message,
       agent.company.name,
     );
+    const contextChunks = retrieved.chunks;
 
     const profile = {
       name: agent.name,
@@ -192,9 +194,7 @@ export class ConversationsService {
         agent: profile,
         message: input.message,
         chunks: contextChunks,
-        hasKnowledge: contextChunks.some(
-          (chunk) => chunk.documentId !== 'company-meta',
-        ),
+        hasKnowledge: retrieved.hasKnowledge,
       });
 
     await this.prisma.message.create({
@@ -289,9 +289,10 @@ export class ConversationsService {
       orderBy: { sortOrder: 'asc' },
     });
 
-    const normalizedMessage = message.toLowerCase();
     const asksCompanyName =
-      /\b(empresa|compa[nñ][ií]a|se llama|nombre)\b/.test(normalizedMessage);
+      /\b(c[oó]mo se llama|nombre de (la )?(empresa|compa[nñ][ií]a)|qu[eé] empresa)\b/i.test(
+        message,
+      );
 
     const companyChunk = {
       id: 'company-meta',
@@ -299,63 +300,19 @@ export class ConversationsService {
       content: `La empresa se llama ${companyName}.`,
     };
 
+    const hasKnowledge = chunks.length > 0;
+
     if (asksCompanyName) {
-      return [companyChunk, ...chunks.slice(0, 3)];
+      return { chunks: [companyChunk], hasKnowledge };
     }
 
-    const stopwords = new Set([
-      'que',
-      'qué',
-      'como',
-      'cómo',
-      'cual',
-      'cuál',
-      'donde',
-      'dónde',
-      'cuando',
-      'cuándo',
-      'para',
-      'por',
-      'con',
-      'sin',
-      'una',
-      'uno',
-      'los',
-      'las',
-      'del',
-      'the',
-      'and',
-    ]);
-
-    const terms = normalizedMessage
-      .split(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ0-9]+/)
-      .map((term) => term.trim())
-      .filter((term) => term.length > 2 && !stopwords.has(term));
-
-    if (chunks.length === 0) {
-      return asksCompanyName ? [companyChunk] : [];
+    if (!hasKnowledge) {
+      return { chunks: [], hasKnowledge: false };
     }
 
-    if (terms.length === 0) {
-      return chunks.slice(0, 4);
-    }
-
-    const ranked = chunks
-      .map((chunk) => {
-        const content = chunk.content.toLowerCase();
-        const score = terms.reduce(
-          (acc, term) => (content.includes(term) ? acc + 1 : acc),
-          0,
-        );
-        return { ...chunk, score };
-      })
-      .sort((a, b) => b.score - a.score);
-
-    const matched = ranked.filter((chunk) => chunk.score > 0).slice(0, 4);
-    if (matched.length > 0) {
-      return matched;
-    }
-
-    return ranked.slice(0, 4);
+    return {
+      chunks: rankKnowledgeChunks(chunks, message),
+      hasKnowledge: true,
+    };
   }
 }

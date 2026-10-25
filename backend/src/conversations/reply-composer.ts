@@ -1,3 +1,5 @@
+import { answerFacts, questionKind } from './knowledge-match';
+
 export type ReplyAgentProfile = {
   name: string;
   tone?: string | null;
@@ -93,56 +95,15 @@ function closer(style: ReturnType<typeof toneStyle>): string {
   return '¿En qué más te puedo ayudar?';
 }
 
-function splitSentences(text: string): string[] {
-  return text
-    .replace(/\s+/g, ' ')
-    .split(/(?<=[.!?…])\s+|\n+/)
-    .map((part) => part.trim())
-    .filter((part) => part.length > 20);
-}
-
-function keywordScore(text: string, keywords: string[]): number {
-  const lower = text.toLowerCase();
-  return keywords.reduce(
-    (score, keyword) => (lower.includes(keyword) ? score + 1 : score),
-    0,
-  );
-}
-
-function pickSentences(
-  chunks: ReplyChunk[],
-  keywords: string[],
-  limit = 3,
-): string[] {
-  const scored = chunks
-    .flatMap((chunk) => splitSentences(chunk.content))
-    .map((sentence) => ({
-      sentence,
-      score: keywordScore(sentence, keywords),
-    }))
-    .sort((a, b) => b.score - a.score);
-
-  const matched = scored
-    .filter((item) => item.score > 0)
-    .slice(0, limit)
-    .map((item) => item.sentence);
-
-  if (matched.length > 0) {
-    return matched;
+function joinList(items: string[]): string {
+  const normalized = items.map((item) => {
+    const text = item.charAt(0).toLowerCase() + item.slice(1);
+    return text.replace(/\.$/, '');
+  });
+  if (normalized.length <= 1) {
+    return normalized[0] ?? '';
   }
-
-  return scored.slice(0, Math.min(2, limit)).map((item) => item.sentence);
-}
-
-function summarizeContext(sentences: string[]): string {
-  const unique = [...new Set(sentences.map((s) => s.replace(/\s+/g, ' ').trim()))];
-  return unique.join(' ');
-}
-
-function instructionsAllowGuess(instructions?: string | null): boolean {
-  const value = (instructions ?? '').toLowerCase();
-  if (!value) return false;
-  return !/solo usa|no invent|base de conocimiento|no especul/.test(value);
+  return `${normalized.slice(0, -1).join(', ')} y ${normalized[normalized.length - 1]}`;
 }
 
 export function composeConversationalReply(input: {
@@ -167,79 +128,35 @@ export function composeConversationalReply(input: {
     return `${start} La empresa se llama ${input.agent.companyName}. ${closer(style)}`;
   }
 
-  if (!input.hasKnowledge || input.chunks.length === 0) {
-    return (
-      `${start} Todavía no tengo información entrenada para responder con seguridad. ` +
-      `Cuando carguen y entrenen documentos, podré ayudarte mejor. ${closer(style)}`
-    );
-  }
+  const kind = questionKind(input.message);
+  const facts = input.hasKnowledge ? answerFacts(input.chunks, input.message) : [];
 
-  const keywordMap: Record<Intent, string[]> = {
-    greeting: [],
-    thanks: [],
-    company_name: ['empresa', 'nombre'],
-    services: [
-      'servicio',
-      'producto',
-      'soluci',
-      'ofrec',
-      'desarroll',
-      'digital',
-      'software',
-      'plan',
-      'precio',
-    ],
-    contact: ['contacto', 'tel', 'correo', 'email', 'whatsapp', 'direcci'],
-    hours: ['horario', 'lunes', 'viernes', 'abierto', 'cerrado'],
-    about: [
-      'marca',
-      'valor',
-      'misi',
-      'visi',
-      'confianza',
-      'innovaci',
-      'profesional',
-      'identidad',
-      'transmit',
-    ],
-    general: input.message
-      .toLowerCase()
-      .split(/[^a-záéíóúüñ0-9]+/i)
-      .filter((term) => term.length > 3),
-  };
-
-  const sentences = pickSentences(input.chunks, keywordMap[intent]);
-  const summary = summarizeContext(sentences);
-
-  if (!summary) {
-    if (instructionsAllowGuess(input.agent.instructions)) {
+  if (facts.length === 0) {
+    if (!input.hasKnowledge) {
       return (
-        `${start} No tengo ese detalle exacto en la base de conocimiento. ` +
-        `Puedo ayudarte con otra consulta sobre ${input.agent.companyName}. ${closer(style)}`
+        `${start} Todavía no tengo información entrenada para responder con seguridad. ` +
+        `Cuando carguen y entrenen documentos, podré ayudarte mejor. ${closer(style)}`
+      );
+    }
+    if (kind === 'price') {
+      return (
+        `No tengo precios publicados en la información de ${input.agent.companyName}. ` +
+        `Si me cuentas qué necesitas, te oriento y lo vemos con el equipo. ${closer(style)}`
       );
     }
     return (
-      `${start} No encuentro ese dato en la información disponible de ${input.agent.companyName}. ` +
+      `No encuentro ese dato en la información de ${input.agent.companyName}. ` +
       `Si me das un poco más de contexto, lo busco de otra forma. ${closer(style)}`
     );
   }
 
-  if (intent === 'services') {
+  if (kind === 'services' && facts.length >= 2) {
     return (
-      `${start} Según nuestra información, ${input.agent.companyName} trabaja con esto: ` +
-      `${summary} ${closer(style)}`
+      `${input.agent.companyName} puede ayudarte con ${joinList(facts)}. ` +
+      `¿Me cuentas qué necesitas resolver?`
     );
   }
 
-  if (intent === 'about') {
-    return (
-      `${start} Sobre ${input.agent.companyName}: ${summary} ${closer(style)}`
-    );
-  }
-
-  if (intent === 'contact' || intent === 'hours') {
-    return `${start} ${summary} ${closer(style)}`;
-  }
-
-  return `${start} ${summary} ${closer(style)}`;
+  const summary = facts.join('. ');
+  return `${summary}. ${closer(style)}`;
 }
