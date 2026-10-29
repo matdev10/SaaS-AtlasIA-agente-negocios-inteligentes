@@ -210,9 +210,18 @@ function collectFacts(chunks: KnowledgeChunk[], message: string): Fact[] {
       if (!cleaned || isInstruction(cleaned)) {
         continue;
       }
+      // Un chunk puede cortar una viñeta a la mitad. Esa línea incompleta no es un dato.
+      if (/^\s*[-*•]\s+/.test(raw) && !/[.!?…)]$/.test(raw.trim())) {
+        continue;
+      }
 
       const folded = fold(cleaned);
       const bullet = isServiceBullet(raw, cleaned);
+      const completeBullet =
+        /^\s*[-*•]\s+/.test(raw) && /[.!?…)]$/.test(raw.trim());
+      const startsOffering = /^(desarr|automat|asisten|integr|consult|pagina)/.test(
+        folded,
+      );
       let score = 0;
 
       for (const term of required) {
@@ -228,8 +237,15 @@ function collectFacts(chunks: KnowledgeChunk[], message: string): Fact[] {
       if (kind === 'services' && SERVICE_STEMS.some((stem) => folded.includes(stem))) {
         score += 2;
       }
-      if (kind === 'services' && bullet) {
-        score += inServiceSection ? 8 : 4;
+      if (kind === 'services' && completeBullet && inServiceSection) {
+        score += 12;
+      } else if (kind === 'services' && completeBullet && startsOffering) {
+        score += 10;
+      } else if (kind === 'services' && completeBullet) {
+        score = 0;
+      }
+      if (kind === 'services' && bullet && inServiceSection) {
+        score += 2;
       }
       if (kind === 'about' && lineMatchesKind(cleaned, 'about') && !bullet) {
         score += 6;

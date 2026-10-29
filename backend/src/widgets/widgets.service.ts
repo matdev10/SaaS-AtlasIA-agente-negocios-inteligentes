@@ -10,6 +10,7 @@ import { PrismaService } from '../database/prisma.service';
 import { OnboardingStep } from '../generated/prisma/enums';
 import { WidgetStatus } from '../generated/prisma/client';
 import { PublicWidgetChatDto } from './dto/public-widget-chat.dto';
+import { isWidgetOriginAllowed } from './origin-policy';
 import { UpsertWidgetDto } from './dto/upsert-widget.dto';
 
 const widgetSelect = {
@@ -181,10 +182,17 @@ export class WidgetsService {
       throw new ForbiddenException('El widget no está disponible');
     }
 
-    this.assertOriginAllowed(requestOrigin, [
+    const allowed = [
       ...widget.allowedDomains,
       widget.agent.company.website ?? '',
-    ]);
+    ];
+    if (
+      !isWidgetOriginAllowed(requestOrigin, allowed, {
+        allowLoopback: process.env.NODE_ENV !== 'production',
+      })
+    ) {
+      throw new ForbiddenException('Origen no permitido para este widget');
+    }
 
     return this.conversationsService.widgetChat({
       companyId: widget.agent.companyId,
@@ -194,47 +202,6 @@ export class WidgetsService {
       visitorName: data.visitorName,
       visitorContact: data.visitorContact,
     });
-  }
-
-  private assertOriginAllowed(origin: string | undefined, allowed: string[]) {
-    const hosts = allowed
-      .map((value) => this.toHostname(value))
-      .filter((value): value is string => Boolean(value));
-
-    // Sin dominios configurados: modo abierto (útil en local).
-    if (hosts.length === 0) {
-      return;
-    }
-
-    // Scripts same-origin o tools sin Origin: permitir.
-    if (!origin) {
-      return;
-    }
-
-    const requestHost = this.toHostname(origin);
-    if (!requestHost) {
-      throw new ForbiddenException('Origen no permitido para este widget');
-    }
-
-    const ok = hosts.some(
-      (host) => requestHost === host || requestHost.endsWith(`.${host}`),
-    );
-
-    if (!ok) {
-      throw new ForbiddenException('Origen no permitido para este widget');
-    }
-  }
-
-  private toHostname(value: string) {
-    const raw = value.trim().toLowerCase();
-    if (!raw) return null;
-
-    try {
-      const url = raw.includes('://') ? new URL(raw) : new URL(`https://${raw}`);
-      return url.hostname.replace(/^www\./, '');
-    } catch {
-      return raw.replace(/^www\./, '').split('/')[0] || null;
-    }
   }
 
   private async assertAgentBelongsToCompany(

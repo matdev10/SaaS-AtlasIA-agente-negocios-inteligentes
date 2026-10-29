@@ -29,4 +29,39 @@ describe('rankKnowledgeChunks', () => {
       rankKnowledgeChunks([intro], 'cual es el horario de atencion?'),
     ).toEqual([]);
   });
+
+  it('ignores a bullet cut off by a chunk boundary', () => {
+    const ranked = rankKnowledgeChunks(
+      [
+        { content: '- Consultoría y orie' },
+        { content: '- Consultoría y orientación tecnológica.' },
+      ],
+      'que servicios ofrecen?',
+    );
+
+    expect(ranked.map((chunk) => chunk.content)).toEqual([
+      '- Consultoría y orientación tecnológica.',
+    ]);
+  });
+
+  it('skips checklist bullets from other sections', () => {
+    const ranked = rankKnowledgeChunks(
+      [
+        {
+          content: `### 6. IDENTIDAD Y SERVICIOS DE NUVCORE
+- Desarrollo de páginas web.
+- Consultoría y orientación tecnológica.`,
+        },
+        {
+          content: `### 10. SEO Y PRESENCIA DIGITAL
+- Contenido original y coherente con los servicios reales.`,
+        },
+      ],
+      'que servicios ofrecen?',
+    );
+
+    const text = ranked.map((chunk) => chunk.content).join('\n');
+    expect(text).toContain('Desarrollo de páginas web');
+    expect(text).not.toContain('Contenido original');
+  });
 });
