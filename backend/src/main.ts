@@ -32,7 +32,12 @@ async function bootstrap() {
     index: false,
     setHeaders(res, filePath) {
       if (filePath.endsWith('widget.js')) {
-        res.setHeader('Cache-Control', 'public, max-age=300');
+        res.setHeader(
+          'Cache-Control',
+          process.env.NODE_ENV === 'production'
+            ? 'public, max-age=300'
+            : 'no-store',
+        );
         res.setHeader('Access-Control-Allow-Origin', '*');
       }
     },

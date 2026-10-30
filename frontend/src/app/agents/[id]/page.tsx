@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 
 import {
   Agent,
+  API_URL,
   api,
   DocumentItem,
   getStoredUser,
@@ -128,8 +129,8 @@ export default function AgentDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const agentId = params.id;
-  const user = getStoredUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mounted, setMounted] = useState(false);
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
@@ -158,6 +159,9 @@ export default function AgentDetailPage() {
   const [chatting, setChatting] = useState(false);
   const [activating, setActivating] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [previewTick, setPreviewTick] = useState(0);
+  const [previewWidgetId, setPreviewWidgetId] = useState<string | null>(null);
+  const [previewChecked, setPreviewChecked] = useState(false);
 
   async function load() {
     const [agentData, docs] = await Promise.all([
@@ -180,6 +184,14 @@ export default function AgentDetailPage() {
         ?.id ?? null;
     setSelectedWelcomeId(matchedWelcome);
     setDocuments(docs);
+    try {
+      const widget = await api<{ id: string }>(`/agents/${agentId}/widget`);
+      setPreviewWidgetId(widget.id);
+    } catch {
+      setPreviewWidgetId(null);
+    } finally {
+      setPreviewChecked(true);
+    }
   }
 
   useEffect(() => {
@@ -189,6 +201,7 @@ export default function AgentDetailPage() {
       return;
     }
 
+    setMounted(true);
     load().catch((err) =>
       setError(err instanceof Error ? err.message : 'Error al cargar agente'),
     );
@@ -378,6 +391,8 @@ export default function AgentDetailPage() {
           }),
         },
       );
+      setPreviewWidgetId(widget.id);
+      setPreviewTick(Date.now());
       setInfo(`Widget publicado: ${widget.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo publicar widget');
@@ -386,7 +401,7 @@ export default function AgentDetailPage() {
     }
   }
 
-  if (!user) return null;
+  if (!mounted) return null;
 
   return (
     <main className={`${styles.page} ${syne.variable} ${dmSans.variable}`}>
@@ -411,8 +426,7 @@ export default function AgentDetailPage() {
             ) : null}
           </div>
           <p className={styles.heroSupport}>
-            Elige opciones rápidas, carga conocimiento y prueba respuestas antes de
-            publicar.
+            Revisá el chat de tu agente, cargá conocimiento y probá cómo responde.
           </p>
           <dl className={styles.metaRow}>
             <div>
@@ -443,6 +457,48 @@ export default function AgentDetailPage() {
           {info}
         </p>
       ) : null}
+
+      <section className={`${styles.card} ${styles.previewCard}`} aria-labelledby="preview-title">
+        <div className={styles.previewHead}>
+          <div className={styles.cardHead}>
+            <h2 id="preview-title">Así ve el chat tu visitante</h2>
+            <p className={styles.cardHelp}>
+              Este es el agente de tu cuenta. Se ve igual que en el sitio, y
+              podés revisarlo acá mientras lo entrenás.
+            </p>
+          </div>
+          <div className={styles.previewActions}>
+            <button
+              type="button"
+              className={styles.btnSecondary}
+              onClick={() => setPreviewTick(Date.now())}
+            >
+              Actualizar vista
+            </button>
+            <a
+              className={styles.previewLink}
+              href={`${API_URL}/demo-nuvcore.html`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Abrir en grande
+            </a>
+          </div>
+        </div>
+        {previewWidgetId ? (
+          <iframe
+            className={styles.previewFrame}
+            title="Vista previa del chat del agente"
+            src={`${API_URL}/demo-nuvcore.html?widget=${encodeURIComponent(previewWidgetId)}&api=${encodeURIComponent(API_URL)}&open=1${previewTick ? `&t=${previewTick}` : ''}`}
+          />
+        ) : (
+          <p className={styles.cardHelp}>
+            {previewChecked
+              ? 'Publicá el widget para revisar el chat desde esta cuenta.'
+              : 'Cargando el chat…'}
+          </p>
+        )}
+      </section>
 
       <div className={styles.grid}>
         <section className={styles.card} aria-labelledby="config-title">

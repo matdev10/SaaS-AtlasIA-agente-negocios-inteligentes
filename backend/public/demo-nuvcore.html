@@ -3,159 +3,59 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Nuvcore · Demo widget AtlasIA</title>
+    <title>Vista previa del agente</title>
     <style>
-      :root {
-        --ink: #101820;
-        --muted: #667484;
-        --line: #e4e8ee;
-        --accent: #7e1c8a;
-        --bg: #f3f5f7;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
+      * { box-sizing: border-box; }
+      html, body {
         margin: 0;
-        min-height: 100vh;
-        font-family: "Segoe UI", "Helvetica Neue", sans-serif;
-        color: var(--ink);
-        background:
-          radial-gradient(900px 420px at 10% 0%, rgba(126, 28, 138, 0.12), transparent 55%),
-          linear-gradient(180deg, #f7f5fb 0%, var(--bg) 100%);
-      }
-
-      header {
-        padding: 1.25rem clamp(1.25rem, 4vw, 3rem);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-      }
-
-      .brand {
-        margin: 0;
-        font-size: 1.4rem;
-        font-weight: 800;
-        letter-spacing: -0.04em;
-      }
-
-      .badge {
-        display: inline-flex;
-        padding: 0.35rem 0.7rem;
-        border-radius: 999px;
-        background: rgba(126, 28, 138, 0.12);
-        color: var(--accent);
-        font-size: 0.82rem;
-        font-weight: 700;
-      }
-
-      main {
-        width: min(920px, calc(100% - 2rem));
-        margin: 0 auto;
-        padding: 1rem 0 6rem;
-      }
-
-      .hero {
-        padding: clamp(1.5rem, 4vw, 2.5rem);
-        border-radius: 24px;
-        color: #f8f4ff;
-        background: linear-gradient(155deg, #0b1d3f 0%, #3e0d6e 42%, #7e1c8a 100%);
-        box-shadow: 0 24px 60px rgba(16, 24, 32, 0.14);
-      }
-
-      .hero h1 {
-        margin: 0 0 0.75rem;
-        font-size: clamp(1.8rem, 4vw, 2.6rem);
-        letter-spacing: -0.04em;
-        line-height: 1.1;
-      }
-
-      .hero p {
-        margin: 0;
-        max-width: 38ch;
-        opacity: 0.92;
-        line-height: 1.5;
-      }
-
-      .card {
-        margin-top: 1rem;
-        padding: 1.25rem 1.35rem;
-        background: #fff;
-        border: 1px solid var(--line);
-        border-radius: 18px;
-        box-shadow: 0 12px 36px rgba(16, 24, 32, 0.06);
-      }
-
-      .card h2 {
-        margin: 0 0 0.5rem;
-        font-size: 1.15rem;
-      }
-
-      .card p,
-      .card li {
-        color: var(--muted);
-        line-height: 1.5;
-      }
-
-      .card ul {
-        margin: 0.5rem 0 0;
-        padding-left: 1.1rem;
-      }
-
-      .hint {
-        margin-top: 1rem;
-        padding: 0.9rem 1rem;
-        border-radius: 14px;
-        border: 1px dashed rgba(126, 28, 138, 0.35);
-        background: rgba(126, 28, 138, 0.05);
-        color: var(--ink);
-        font-size: 0.95rem;
-      }
-
-      code {
-        font-family: ui-monospace, Consolas, monospace;
-        font-size: 0.88em;
+        min-height: 100%;
+        background: #07060b;
       }
     </style>
   </head>
   <body>
-    <header>
-      <p class="brand">Nuvcore</p>
-      <span class="badge">Demo widget</span>
-    </header>
+    <script>
+      (function () {
+        var params = new URLSearchParams(location.search);
+        var fallbackWidget = "81fd9a2e-33a5-4982-8b53-855811d83198";
+        var widget = params.get("widget") || fallbackWidget;
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(widget)) {
+          widget = fallbackWidget;
+        }
 
-    <main>
-      <section class="hero">
-        <h1>Soluciones digitales para tu empresa</h1>
-        <p>
-          Esta página simula nuvcore.cl. El chat de AtlasIA aparece abajo a la
-          derecha, igual que en tu sitio.
-        </p>
-      </section>
+        var api = location.origin;
+        var requested = params.get("api");
+        if (requested) {
+          try {
+            var url = new URL(requested);
+            if (
+              (url.protocol === "http:" || url.protocol === "https:") &&
+              !url.username &&
+              !url.password
+            ) {
+              api = url.origin;
+            }
+          } catch (error) {
+            api = location.origin;
+          }
+        }
 
-      <section class="card">
-        <h2>Cómo probar</h2>
-        <ul>
-          <li>Abrí el botón <strong>Chat</strong> abajo a la derecha.</li>
-          <li>Preguntá algo como: <code>qué hacen?</code> o <code>quiénes son?</code></li>
-          <li>El backend tiene que estar corriendo en <code>localhost:3000</code>.</li>
-        </ul>
-        <p class="hint">
-          Cuando publiques en producción, cambiá en el snippet
-          <code>http://localhost:3000</code> por la URL HTTPS de tu API.
-        </p>
-      </section>
-    </main>
-
-    <!-- AtlasIA widget · Nuvcore -->
-    <script
-      src="http://localhost:3000/widget.js"
-      data-atlasia-widget="81fd9a2e-33a5-4982-8b53-855811d83198"
-      data-atlasia-api="http://localhost:3000"
-      async
-    ></script>
+        var open = params.get("open") === "1" ? ' data-atlasia-open="true"' : "";
+        document.write(
+          '<script src="' +
+            api +
+            "/widget.js?t=" +
+            Date.now() +
+            '" data-atlasia-widget="' +
+            widget +
+            '" data-atlasia-api="' +
+            api +
+            '"' +
+            open +
+            "></" +
+            "script>"
+        );
+      })();
+    </script>
   </body>
 </html>

@@ -53,17 +53,17 @@
         border-radius: 39px;
         color: white;
         background: linear-gradient(145deg,#8338ec,#35105f);
-        box-shadow: 0 8px 35px rgba(108,43,222,.38);
+        box-shadow: 0 8px 35px rgba(70, 43, 222, 0.38);
         cursor: pointer;
         transition: transform .2s, box-shadow .2s;
       }
 
       #atlasia-fab:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 38px rgba(108,43,222,.5);
+        box-shadow: 0 12px 38px rgba(43, 165, 222, 0.5);
       }
 
-      #atlasia-fab svg { width: 35px; height: 35px; }
+      #atlasia-fab svg { width: 30px; height: 30px; }
 
       #atlasia-panel {
         position: fixed;
@@ -549,6 +549,10 @@
   fab.addEventListener("click", function () {
     setOpen(!state.open);
   });
+
+  if (current.getAttribute("data-atlasia-open") === "true") {
+    setOpen(true);
+  }
 
   close.addEventListener("click", function () {
     setOpen(false);

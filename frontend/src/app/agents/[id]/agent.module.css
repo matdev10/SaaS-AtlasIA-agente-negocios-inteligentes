@@ -257,6 +257,39 @@
   margin-bottom: 1rem;
 }
 
+.previewCard {
+  margin-bottom: 1rem;
+}
+
+.previewHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.previewActions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.previewLink {
+  color: var(--accent-deep);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.previewFrame {
+  width: 100%;
+  height: 720px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #07060b;
+}
+
 .card {
   min-width: 0;
   padding: 1.35rem;
@@ -878,6 +911,10 @@
 
   .card {
     padding: 1.2rem;
+  }
+
+  .previewHead {
+    flex-direction: column;
   }
 }
 
