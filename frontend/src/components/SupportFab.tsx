@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 
 import styles from './SupportFab.module.css';
 
-const SUPPORT_EMAIL = 'soporte@atlasia.app';
+const SUPPORT_EMAIL = 'soporte@sophiaia.com';
 
 export function SupportFab() {
   const [open, setOpen] = useState(false);

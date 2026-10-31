@@ -1,24 +1,37 @@
 'use client';
 
-import { DM_Sans, Syne } from 'next/font/google';
+import { Bebas_Neue, DM_Sans } from 'next/font/google';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { api, AuthResponse, setSession } from '@/lib/api';
-import styles from '../auth.module.css';
+import styles from './login.module.css';
 
-const syne = Syne({
+const bebas = Bebas_Neue({
   subsets: ['latin'],
-  weight: ['600', '700', '800'],
-  variable: '--font-auth-display',
+  weight: '400',
+  variable: '--font-login-display',
 });
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-auth-body',
+  variable: '--font-login-body',
 });
+
+const globe = (
+  <svg viewBox="0 0 160 160" fill="none" aria-hidden="true">
+    <g stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <circle cx="80" cy="80" r="70" />
+      <ellipse cx="80" cy="80" rx="48" ry="70" />
+      <ellipse cx="80" cy="80" rx="26" ry="70" />
+      <line x1="80" y1="10" x2="80" y2="150" />
+      <ellipse cx="80" cy="80" rx="70" ry="16" />
+      <ellipse cx="80" cy="80" rx="70" ry="40" />
+    </g>
+  </svg>
+);
 
 export default function LoginPage() {
   const router = useRouter();
@@ -52,85 +65,83 @@ export default function LoginPage() {
   }
 
   return (
-    <main className={`${styles.page} ${syne.variable} ${dmSans.variable}`}>
-      <div className={styles.shell}>
-        <section className={styles.visual}>
-          <div className={styles.visualGlow} aria-hidden="true" />
-          <p className={styles.visualBrand}>AtlasIA</p>
-          <div className={styles.visualCopy}>
-            <p className={styles.visualEyebrow}>Tu empresa, un agente</p>
-            <h1 className={styles.visualHeadline}>
+    <main className={`${styles.page} ${bebas.variable} ${dmSans.variable}`}>
+      <div className={styles.stage}>
+        <section className={styles.brand} aria-label="Sophia IA">
+          <div className={styles.logo}>
+            <p className={styles.sophia}>Sophia</p>
+            <div className={styles.globe}>{globe}</div>
+            <p className={styles.ia}>IA</p>
+          </div>
+          <div className={styles.brandFoot}>
+            <p className={styles.brandEyebrow}>Tu empresa, un agente</p>
+            <p className={styles.brandHeadline}>
               Accede al hub donde tu conocimiento responde solo
-            </h1>
+            </p>
           </div>
         </section>
 
-        <section className={styles.panel}>
-          <div className={styles.panelInner}>
-            <header className={styles.panelHeader}>
-              <p className={styles.panelMark}>AtlasIA</p>
-              <h2 className={styles.panelTitle}>Iniciar sesión</h2>
-              <p className={styles.panelSupport}>
-                Entrá al panel para configurar agentes, documentos y tu widget.
-              </p>
-            </header>
+        <section className={styles.formSide}>
+          <header className={styles.formHeader}>
+            <p className={styles.mark}>Sophia IA</p>
+            <h1 className={styles.title}>Iniciar sesión</h1>
+            <p className={styles.support}>
+              Entrá al panel para configurar agentes, documentos y tu widget.
+            </p>
+          </header>
 
-            <form className={styles.form} onSubmit={onSubmit} noValidate>
-              <label className={styles.field}>
-                <span>Tu correo</span>
+          <form className={styles.form} onSubmit={onSubmit} noValidate>
+            <label className={styles.field}>
+              <span>Tu correo</span>
+              <input
+                type="email"
+                placeholder="tu@empresa.com"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span>Tu contraseña</span>
+              <div className={styles.passwordRow}>
                 <input
-                  type="email"
-                  autoComplete="email"
-                  placeholder="tu@empresa.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Mínimo 8 caracteres"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={8}
                   required
                 />
-              </label>
+                <button
+                  type="button"
+                  className={styles.eyeButton}
+                  onClick={() => setShowPassword((value) => !value)}
+                  aria-label={
+                    showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                  }
+                >
+                  {showPassword ? 'Ocultar' : 'Ver'}
+                </button>
+              </div>
+            </label>
 
-              <label className={styles.field}>
-                <span>Contraseña</span>
-                <div className={styles.passwordRow}>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    placeholder="Mínimo 8 caracteres"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    minLength={8}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className={styles.eyeButton}
-                    onClick={() => setShowPassword((value) => !value)}
-                    aria-label={
-                      showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
-                    }
-                  >
-                    {showPassword ? 'Ocultar' : 'Ver'}
-                  </button>
-                </div>
-              </label>
+            {error ? (
+              <p className={styles.error} role="alert">
+                {error}
+              </p>
+            ) : null}
 
-              {error ? (
-                <p className={styles.error} role="alert">
-                  {error}
-                </p>
-              ) : null}
+            <button className={styles.submit} type="submit" disabled={loading}>
+              {loading ? 'Entrando…' : 'Entrar'}
+            </button>
+          </form>
 
-              <button className={styles.submit} type="submit" disabled={loading}>
-                {loading ? 'Entrando…' : 'Entrar'}
-              </button>
-            </form>
-
-            <p className={styles.footer}>
-              ¿No tienes cuenta?{' '}
-              <Link href="/register" className={styles.footerLink}>
-                Crear cuenta
-              </Link>
-            </p>
-          </div>
+          <p className={styles.footer}>
+            ¿No tienes cuenta? <Link href="/register">Crear cuenta</Link>
+          </p>
         </section>
       </div>
     </main>
