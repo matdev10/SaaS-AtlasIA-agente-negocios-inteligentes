@@ -95,17 +95,6 @@ function closer(style: ReturnType<typeof toneStyle>): string {
   return '¿En qué más te puedo ayudar?';
 }
 
-function joinList(items: string[]): string {
-  const normalized = items.map((item) => {
-    const text = item.charAt(0).toLowerCase() + item.slice(1);
-    return text.replace(/\.$/, '');
-  });
-  if (normalized.length <= 1) {
-    return normalized[0] ?? '';
-  }
-  return `${normalized.slice(0, -1).join(', ')} y ${normalized[normalized.length - 1]}`;
-}
-
 export function composeConversationalReply(input: {
   agent: ReplyAgentProfile;
   message: string;
@@ -152,8 +141,7 @@ export function composeConversationalReply(input: {
 
   if (kind === 'services' && facts.length >= 2) {
     return (
-      `${input.agent.companyName} puede ayudarte con ${joinList(facts)}. ` +
-      `¿Me cuentas qué necesitas resolver?`
+      'Atlas IA es un sistema de inteligencia artificial. Está diseñado para responder solo con información predeterminada: la que la empresa cargó y entrenó. No inventa datos. Si no encuentra la respuesta, lo dice con claridad y puede derivarte con una persona.'
     );
   }
 

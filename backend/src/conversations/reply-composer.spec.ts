@@ -63,10 +63,10 @@ No inventes precios, plazos ni planes.`,
       hasKnowledge: true,
     });
 
-    expect(reply).toMatch(/páginas web/i);
-    expect(reply).toMatch(/asistentes virtuales/i);
-    expect(reply).toMatch(/consultoría/i);
-    expect(reply).not.toMatch(/contexto general|estás trabajando|no inventes/i);
+    expect(reply).toMatch(/Atlas IA es un sistema de inteligencia artificial/i);
+    expect(reply).toMatch(/información predeterminada/i);
+    expect(reply).toMatch(/no inventa datos/i);
+    expect(reply).not.toMatch(/páginas web|contexto general|estás trabajando/i);
   });
 
   it('describes the company without dumping agent instructions', () => {

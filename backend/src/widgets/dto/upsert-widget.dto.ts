@@ -2,6 +2,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsEnum,
+  IsIn,
   IsOptional,
   IsString,
   IsUrl,
@@ -30,6 +31,10 @@ export class UpsertWidgetDto {
   @IsString()
   @MaxLength(30)
   position?: string;
+
+  @IsOptional()
+  @IsIn(['sm', 'md', 'lg'])
+  size?: 'sm' | 'md' | 'lg';
 
   @IsOptional()
   @IsUrl()

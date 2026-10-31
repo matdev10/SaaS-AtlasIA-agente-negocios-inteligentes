@@ -72,7 +72,7 @@ const WELCOME_OPTIONS = [
   {
     id: 'hola',
     label: 'Saludo simple',
-    value: 'Hola, ¿en qué puedo ayudarte?',
+    value: '¡Hola! ¿En qué te puedo ayudar?',
   },
   {
     id: 'empresa',
@@ -85,6 +85,14 @@ const WELCOME_OPTIONS = [
     value: 'Bienvenido. Puedo ayudarte con horarios, precios y políticas. ¿Cuál es tu consulta?',
   },
 ] as const;
+
+const SIZE_OPTIONS = [
+  { id: 'sm', label: 'Chico' },
+  { id: 'md', label: 'Mediano' },
+  { id: 'lg', label: 'Grande' },
+] as const;
+
+type WidgetSize = (typeof SIZE_OPTIONS)[number]['id'];
 
 const TEXT_FILE_EXTENSIONS = ['.txt', '.md', '.csv', '.faq', '.text'];
 
@@ -162,6 +170,10 @@ export default function AgentDetailPage() {
   const [previewTick, setPreviewTick] = useState(0);
   const [previewWidgetId, setPreviewWidgetId] = useState<string | null>(null);
   const [previewChecked, setPreviewChecked] = useState(false);
+  const [widgetSize, setWidgetSize] = useState<WidgetSize>('lg');
+  const [savingSize, setSavingSize] = useState(false);
+  const [sizeMenuOpen, setSizeMenuOpen] = useState(false);
+  const [sizeSaved, setSizeSaved] = useState(false);
 
   async function load() {
     const [agentData, docs] = await Promise.all([
@@ -185,8 +197,13 @@ export default function AgentDetailPage() {
     setSelectedWelcomeId(matchedWelcome);
     setDocuments(docs);
     try {
-      const widget = await api<{ id: string }>(`/agents/${agentId}/widget`);
+      const widget = await api<{ id: string; size?: string | null }>(
+        `/agents/${agentId}/widget`,
+      );
       setPreviewWidgetId(widget.id);
+      setWidgetSize(
+        widget.size === 'sm' || widget.size === 'md' ? widget.size : 'lg',
+      );
     } catch {
       setPreviewWidgetId(null);
     } finally {
@@ -375,6 +392,39 @@ export default function AgentDetailPage() {
     }
   }
 
+  async function chooseWidgetSize(size: WidgetSize) {
+    if (savingSize) return;
+    setSizeSaved(false);
+    if (size === widgetSize) {
+      setSizeMenuOpen(false);
+      setSizeSaved(true);
+      return;
+    }
+    setError('');
+    setSavingSize(true);
+    try {
+      const widget = await api<{ id: string; size?: string | null }>(
+        `/agents/${agentId}/widget`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ size }),
+        },
+      );
+      const saved =
+        widget.size === 'sm' || widget.size === 'md' || widget.size === 'lg'
+          ? widget.size
+          : size;
+      setWidgetSize(saved);
+      setSizeMenuOpen(false);
+      setSizeSaved(true);
+      setPreviewTick(Date.now());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo cambiar el tamaño');
+    } finally {
+      setSavingSize(false);
+    }
+  }
+
   async function publishWidget() {
     setError('');
     setInfo('');
@@ -386,7 +436,7 @@ export default function AgentDetailPage() {
           method: 'PUT',
           body: JSON.stringify({
             status: 'ACTIVE',
-            welcomeMessage: welcomeMessage || 'Hola, ¿en qué puedo ayudarte?',
+            welcomeMessage: welcomeMessage || '¡Hola! ¿En qué te puedo ayudar?',
             primaryColor: '#7e1c8a',
           }),
         },
@@ -458,49 +508,8 @@ export default function AgentDetailPage() {
         </p>
       ) : null}
 
-      <section className={`${styles.card} ${styles.previewCard}`} aria-labelledby="preview-title">
-        <div className={styles.previewHead}>
-          <div className={styles.cardHead}>
-            <h2 id="preview-title">Así ve el chat tu visitante</h2>
-            <p className={styles.cardHelp}>
-              Este es el agente de tu cuenta. Se ve igual que en el sitio, y
-              podés revisarlo acá mientras lo entrenás.
-            </p>
-          </div>
-          <div className={styles.previewActions}>
-            <button
-              type="button"
-              className={styles.btnSecondary}
-              onClick={() => setPreviewTick(Date.now())}
-            >
-              Actualizar vista
-            </button>
-            <a
-              className={styles.previewLink}
-              href={`${API_URL}/demo-nuvcore.html`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Abrir en grande
-            </a>
-          </div>
-        </div>
-        {previewWidgetId ? (
-          <iframe
-            className={styles.previewFrame}
-            title="Vista previa del chat del agente"
-            src={`${API_URL}/demo-nuvcore.html?widget=${encodeURIComponent(previewWidgetId)}&api=${encodeURIComponent(API_URL)}&open=1${previewTick ? `&t=${previewTick}` : ''}`}
-          />
-        ) : (
-          <p className={styles.cardHelp}>
-            {previewChecked
-              ? 'Publicá el widget para revisar el chat desde esta cuenta.'
-              : 'Cargando el chat…'}
-          </p>
-        )}
-      </section>
-
-      <div className={styles.grid}>
+      <div className={styles.workspace}>
+        <div className={styles.editorPane}>
         <section className={styles.card} aria-labelledby="config-title">
           <div className={styles.cardHead}>
             <h2 id="config-title">Configuración del agente</h2>
@@ -764,9 +773,8 @@ export default function AgentDetailPage() {
             )}
           </div>
         </section>
-      </div>
 
-      <section className={`${styles.card} ${styles.chatCard}`} aria-labelledby="chat-title">
+        <section className={`${styles.card} ${styles.chatCard}`} aria-labelledby="chat-title">
         <div className={styles.cardHead}>
           <h2 id="chat-title">Chat de prueba</h2>
           <p className={styles.cardHelp}>
@@ -821,7 +829,95 @@ export default function AgentDetailPage() {
             </button>
           </form>
         </div>
-      </section>
+        </section>
+        </div>
+
+        <aside className={styles.agentPane} aria-labelledby="preview-title">
+          <div className={styles.previewHead}>
+            <div className={styles.cardHead}>
+              <h2 id="preview-title">Así ve el chat tu visitante</h2>
+              <p className={styles.cardHelp}>
+                Este es el agente de tu cuenta. Se ve igual que en el sitio, y
+                podés revisarlo acá mientras lo entrenás.
+              </p>
+            </div>
+            <div className={styles.previewActions}>
+              <button
+                type="button"
+                className={styles.btnSecondary}
+                onClick={() => setPreviewTick(Date.now())}
+              >
+                Actualizar vista
+              </button>
+              <a
+                className={styles.previewLink}
+                href={`${API_URL}/demo-nuvcore.html`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Abrir en grande
+              </a>
+            </div>
+            <div className={styles.sizePicker}>
+              <button
+                type="button"
+                className={`${styles.sizeToggle} ${
+                  sizeMenuOpen ? styles.sizeToggleOpen : ''
+                }`}
+                aria-expanded={sizeMenuOpen}
+                aria-controls="agent-size-menu"
+                disabled={!previewWidgetId}
+                onClick={() => setSizeMenuOpen((open) => !open)}
+              >
+                Tamaño
+                <span className={styles.sizeCurrent}>
+                  {SIZE_OPTIONS.find((option) => option.id === widgetSize)?.label}
+                </span>
+              </button>
+              {sizeSaved ? <span className={styles.sizeSaved}>Guardado</span> : null}
+              {sizeMenuOpen ? (
+                <div
+                  id="agent-size-menu"
+                  className={styles.sizeMenu}
+                  role="group"
+                  aria-label="Medidas del agente"
+                >
+                  {SIZE_OPTIONS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      className={`${styles.sizeOption} ${
+                        widgetSize === option.id ? styles.sizeOptionActive : ''
+                      }`}
+                      disabled={!previewWidgetId || savingSize}
+                      aria-pressed={widgetSize === option.id}
+                      onClick={() => {
+                        setSizeMenuOpen(false);
+                        void chooseWidgetSize(option.id);
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+          {previewWidgetId ? (
+            <iframe
+              className={styles.previewFrame}
+              title="Vista previa del chat del agente"
+              src={`${API_URL}/demo-nuvcore.html?widget=${encodeURIComponent(previewWidgetId)}&api=${encodeURIComponent(API_URL)}&open=1${previewTick ? `&t=${previewTick}` : ''}`}
+            />
+          ) : (
+            <p className={styles.cardHelp}>
+              {previewChecked
+                ? 'Publicá el widget para revisar el chat desde esta cuenta.'
+                : 'Cargando el chat…'}
+            </p>
+          )}
+        </aside>
+      </div>
     </main>
   );
 }

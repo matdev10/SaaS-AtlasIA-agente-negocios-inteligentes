@@ -304,6 +304,7 @@ model Widget {
   primaryColor    String?
   welcomeMessage  String?
   position        String?
+  size            String?      @default("lg")
   logoUrl         String?
   allowedDomains  String[]     @default([])
   status          WidgetStatus @default(INACTIVE)

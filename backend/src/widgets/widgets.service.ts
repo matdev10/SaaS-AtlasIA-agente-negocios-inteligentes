@@ -20,6 +20,7 @@ const widgetSelect = {
   primaryColor: true,
   welcomeMessage: true,
   position: true,
+  size: true,
   logoUrl: true,
   allowedDomains: true,
   status: true,
@@ -68,6 +69,7 @@ export class WidgetsService {
         primaryColor: data.primaryColor,
         welcomeMessage: data.welcomeMessage,
         position: data.position ?? 'bottom-right',
+        size: data.size ?? 'lg',
         logoUrl: data.logoUrl,
         allowedDomains: allowedDomains ?? [],
         status: data.status ?? WidgetStatus.INACTIVE,
@@ -124,11 +126,17 @@ export class WidgetsService {
         primaryColor: true,
         welcomeMessage: true,
         position: true,
+        size: true,
         logoUrl: true,
         agent: {
           select: {
             id: true,
             name: true,
+            company: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
       },

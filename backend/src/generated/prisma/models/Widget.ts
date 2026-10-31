@@ -31,6 +31,7 @@ export type WidgetMinAggregateOutputType = {
   primaryColor: string | null
   welcomeMessage: string | null
   position: string | null
+  size: string | null
   logoUrl: string | null
   status: $Enums.WidgetStatus | null
   createdAt: Date | null
@@ -44,6 +45,7 @@ export type WidgetMaxAggregateOutputType = {
   primaryColor: string | null
   welcomeMessage: string | null
   position: string | null
+  size: string | null
   logoUrl: string | null
   status: $Enums.WidgetStatus | null
   createdAt: Date | null
@@ -57,6 +59,7 @@ export type WidgetCountAggregateOutputType = {
   primaryColor: number
   welcomeMessage: number
   position: number
+  size: number
   logoUrl: number
   allowedDomains: number
   status: number
@@ -73,6 +76,7 @@ export type WidgetMinAggregateInputType = {
   primaryColor?: true
   welcomeMessage?: true
   position?: true
+  size?: true
   logoUrl?: true
   status?: true
   createdAt?: true
@@ -86,6 +90,7 @@ export type WidgetMaxAggregateInputType = {
   primaryColor?: true
   welcomeMessage?: true
   position?: true
+  size?: true
   logoUrl?: true
   status?: true
   createdAt?: true
@@ -99,6 +104,7 @@ export type WidgetCountAggregateInputType = {
   primaryColor?: true
   welcomeMessage?: true
   position?: true
+  size?: true
   logoUrl?: true
   allowedDomains?: true
   status?: true
@@ -186,6 +192,7 @@ export type WidgetGroupByOutputType = {
   primaryColor: string | null
   welcomeMessage: string | null
   position: string | null
+  size: string | null
   logoUrl: string | null
   allowedDomains: string[]
   status: $Enums.WidgetStatus
@@ -221,6 +228,7 @@ export type WidgetWhereInput = {
   primaryColor?: Prisma.StringNullableFilter<"Widget"> | string | null
   welcomeMessage?: Prisma.StringNullableFilter<"Widget"> | string | null
   position?: Prisma.StringNullableFilter<"Widget"> | string | null
+  size?: Prisma.StringNullableFilter<"Widget"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"Widget"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Widget">
   status?: Prisma.EnumWidgetStatusFilter<"Widget"> | $Enums.WidgetStatus
@@ -236,6 +244,7 @@ export type WidgetOrderByWithRelationInput = {
   primaryColor?: Prisma.SortOrderInput | Prisma.SortOrder
   welcomeMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   position?: Prisma.SortOrderInput | Prisma.SortOrder
+  size?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -254,6 +263,7 @@ export type WidgetWhereUniqueInput = Prisma.AtLeast<{
   primaryColor?: Prisma.StringNullableFilter<"Widget"> | string | null
   welcomeMessage?: Prisma.StringNullableFilter<"Widget"> | string | null
   position?: Prisma.StringNullableFilter<"Widget"> | string | null
+  size?: Prisma.StringNullableFilter<"Widget"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"Widget"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Widget">
   status?: Prisma.EnumWidgetStatusFilter<"Widget"> | $Enums.WidgetStatus
@@ -269,6 +279,7 @@ export type WidgetOrderByWithAggregationInput = {
   primaryColor?: Prisma.SortOrderInput | Prisma.SortOrder
   welcomeMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   position?: Prisma.SortOrderInput | Prisma.SortOrder
+  size?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -289,6 +300,7 @@ export type WidgetScalarWhereWithAggregatesInput = {
   primaryColor?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
   welcomeMessage?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
   position?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
+  size?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
   logoUrl?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Widget">
   status?: Prisma.EnumWidgetStatusWithAggregatesFilter<"Widget"> | $Enums.WidgetStatus
@@ -302,6 +314,7 @@ export type WidgetCreateInput = {
   primaryColor?: string | null
   welcomeMessage?: string | null
   position?: string | null
+  size?: string | null
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
   status?: $Enums.WidgetStatus
@@ -317,6 +330,7 @@ export type WidgetUncheckedCreateInput = {
   primaryColor?: string | null
   welcomeMessage?: string | null
   position?: string | null
+  size?: string | null
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
   status?: $Enums.WidgetStatus
@@ -330,6 +344,7 @@ export type WidgetUpdateInput = {
   primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -345,6 +360,7 @@ export type WidgetUncheckedUpdateInput = {
   primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -359,6 +375,7 @@ export type WidgetCreateManyInput = {
   primaryColor?: string | null
   welcomeMessage?: string | null
   position?: string | null
+  size?: string | null
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
   status?: $Enums.WidgetStatus
@@ -372,6 +389,7 @@ export type WidgetUpdateManyMutationInput = {
   primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -386,6 +404,7 @@ export type WidgetUncheckedUpdateManyInput = {
   primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -413,6 +432,7 @@ export type WidgetCountOrderByAggregateInput = {
   primaryColor?: Prisma.SortOrder
   welcomeMessage?: Prisma.SortOrder
   position?: Prisma.SortOrder
+  size?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -427,6 +447,7 @@ export type WidgetMaxOrderByAggregateInput = {
   primaryColor?: Prisma.SortOrder
   welcomeMessage?: Prisma.SortOrder
   position?: Prisma.SortOrder
+  size?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -440,6 +461,7 @@ export type WidgetMinOrderByAggregateInput = {
   primaryColor?: Prisma.SortOrder
   welcomeMessage?: Prisma.SortOrder
   position?: Prisma.SortOrder
+  size?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -497,6 +519,7 @@ export type WidgetCreateWithoutAgentInput = {
   primaryColor?: string | null
   welcomeMessage?: string | null
   position?: string | null
+  size?: string | null
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
   status?: $Enums.WidgetStatus
@@ -510,6 +533,7 @@ export type WidgetUncheckedCreateWithoutAgentInput = {
   primaryColor?: string | null
   welcomeMessage?: string | null
   position?: string | null
+  size?: string | null
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
   status?: $Enums.WidgetStatus
@@ -539,6 +563,7 @@ export type WidgetUpdateWithoutAgentInput = {
   primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -552,6 +577,7 @@ export type WidgetUncheckedUpdateWithoutAgentInput = {
   primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -568,6 +594,7 @@ export type WidgetSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   primaryColor?: boolean
   welcomeMessage?: boolean
   position?: boolean
+  size?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
   status?: boolean
@@ -583,6 +610,7 @@ export type WidgetSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   primaryColor?: boolean
   welcomeMessage?: boolean
   position?: boolean
+  size?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
   status?: boolean
@@ -598,6 +626,7 @@ export type WidgetSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   primaryColor?: boolean
   welcomeMessage?: boolean
   position?: boolean
+  size?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
   status?: boolean
@@ -613,6 +642,7 @@ export type WidgetSelectScalar = {
   primaryColor?: boolean
   welcomeMessage?: boolean
   position?: boolean
+  size?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
   status?: boolean
@@ -620,7 +650,7 @@ export type WidgetSelectScalar = {
   updatedAt?: boolean
 }
 
-export type WidgetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "agentId" | "name" | "primaryColor" | "welcomeMessage" | "position" | "logoUrl" | "allowedDomains" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["widget"]>
+export type WidgetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "agentId" | "name" | "primaryColor" | "welcomeMessage" | "position" | "size" | "logoUrl" | "allowedDomains" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["widget"]>
 export type WidgetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   agent?: boolean | Prisma.AgentDefaultArgs<ExtArgs>
 }
@@ -643,6 +673,7 @@ export type $WidgetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     primaryColor: string | null
     welcomeMessage: string | null
     position: string | null
+    size: string | null
     logoUrl: string | null
     allowedDomains: string[]
     status: $Enums.WidgetStatus
@@ -1078,6 +1109,7 @@ export interface WidgetFieldRefs {
   readonly primaryColor: Prisma.FieldRef<"Widget", 'String'>
   readonly welcomeMessage: Prisma.FieldRef<"Widget", 'String'>
   readonly position: Prisma.FieldRef<"Widget", 'String'>
+  readonly size: Prisma.FieldRef<"Widget", 'String'>
   readonly logoUrl: Prisma.FieldRef<"Widget", 'String'>
   readonly allowedDomains: Prisma.FieldRef<"Widget", 'String[]'>
   readonly status: Prisma.FieldRef<"Widget", 'WidgetStatus'>

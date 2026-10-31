@@ -20,13 +20,6 @@
     config: null,
   };
 
-  var quickActions = [
-    { label: "Nuestros servicios", message: "¿Cuáles son sus servicios?", icon: "▦" },
-    { label: "Cotizar proyecto", message: "Quiero cotizar un proyecto.", icon: "▤" },
-    { label: "Ver proyectos", message: "Quiero conocer sus proyectos.", icon: "▱" },
-    { label: "Hablar con un asesor", message: "Quiero hablar con un asesor.", icon: "◉" },
-  ];
-
   function css(color) {
     return `
       #atlasia-root {
@@ -104,12 +97,22 @@
         color: white;
         background: linear-gradient(145deg,${color},#351075);
         border: 1px solid rgba(187,140,255,.4);
-        border-radius: 15px;
+        border-radius: 50%;
       }
 
       #atlasia-mark svg { width: 23px; height: 23px; }
 
       #atlasia-head-copy { min-width: 0; flex: 1; }
+
+      #atlasia-brand {
+        margin-right: 2px;
+        color: rgba(247,243,255,.32);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
 
       #atlasia-head strong {
         display: block;
@@ -362,6 +365,16 @@
         #atlasia-footer { padding: 10px 14px 12px; }
       }
 
+      #atlasia-panel[data-size="md"] {
+        width: min(340px, calc(100vw - 24px));
+        height: min(520px, calc(100dvh - 96px));
+      }
+
+      #atlasia-panel[data-size="sm"] {
+        width: min(300px, calc(100vw - 24px));
+        height: min(420px, calc(100dvh - 96px));
+      }
+
       @media(prefers-reduced-motion:reduce) {
         #atlasia-fab { transition: none; }
       }
@@ -424,7 +437,8 @@
   var mark = el("div", { id: "atlasia-mark" });
   mark.innerHTML = atlasMark;
   var headCopy = el("div", { id: "atlasia-head-copy" });
-  var title = el("strong", { text: "AtlasIA" });
+  var title = el("strong", { text: "" });
+  var brand = el("b", { id: "atlasia-brand", text: "Atlas IA" });
   var subtitle = el("span");
   var status = el("i", { id: "atlasia-status" });
   var close = el("button", {
@@ -440,46 +454,10 @@
   headCopy.appendChild(subtitle);
   head.appendChild(mark);
   head.appendChild(headCopy);
+  head.appendChild(brand);
   head.appendChild(close);
 
-  var intro = el("div", { id: "atlasia-intro" });
-  var eyebrow = el("div", { id: "atlasia-eyebrow" });
-  eyebrow.innerHTML = atlasMark;
-  eyebrow.appendChild(document.createTextNode("ASISTENTE INTELIGENTE"));
-  intro.appendChild(eyebrow);
-  intro.appendChild(el("h2", { text: "Hola, ¿en qué podemos ayudarte?" }));
-  intro.appendChild(el("p", {
-    text: "Estoy aquí para ayudarte a encontrar la mejor solución digital para tu negocio.",
-  }));
-
   var messages = el("div", { id: "atlasia-messages", "aria-live": "polite" });
-
-  var quick = el("div", { id: "atlasia-quick" });
-  quick.appendChild(el("p", {
-    id: "atlasia-quick-label",
-    text: "¿Por dónde comenzamos?",
-  }));
-
-  var actions = el("div", { id: "atlasia-actions" });
-
-  quickActions.forEach(function (item) {
-    var button = el("button", {
-      className: "atlasia-action",
-      type: "button",
-      "aria-label": item.label,
-    });
-
-    button.appendChild(el("span", { text: item.icon }));
-    button.appendChild(el("span", { text: item.label }));
-
-    button.addEventListener("click", function () {
-      sendMessage(item.message);
-    });
-
-    actions.appendChild(button);
-  });
-
-  quick.appendChild(actions);
 
   var form = el("form", { id: "atlasia-form" });
   var input = el("input", {
@@ -507,9 +485,7 @@
   footer.appendChild(el("span", { text: "AtlasIA · AI Assistant" }));
 
   panel.appendChild(head);
-  panel.appendChild(intro);
   panel.appendChild(messages);
-  panel.appendChild(quick);
   panel.appendChild(form);
   panel.appendChild(footer);
 
@@ -644,12 +620,14 @@
 
       style.textContent = css(color);
       title.textContent =
-        (config.agent && config.agent.name) || config.name || "AtlasIA";
+        (config.agent && config.agent.company && config.agent.company.name) ||
+        (config.agent && config.agent.name) ||
+        "Atlas IA";
 
       subtitle.replaceChildren(status, document.createTextNode("En línea"));
 
       var welcome =
-        config.welcomeMessage || "¡Hola! Soy AtlasIA. ¿En qué puedo ayudarte?";
+        config.welcomeMessage || "¡Hola! ¿En qué te puedo ayudar?";
 
       addBubble("assistant", welcome);
 
@@ -659,6 +637,11 @@
         panel.style.left = "20px";
         panel.style.right = "auto";
       }
+
+      panel.setAttribute(
+        "data-size",
+        config.size === "sm" || config.size === "md" ? config.size : "lg"
+      );
     })
     .catch(function (error) {
       console.error("[AtlasIA] No se pudo cargar la configuración:", error);
