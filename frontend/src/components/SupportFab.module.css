@@ -16,7 +16,7 @@
   border: 0;
   border-radius: 999px;
   padding: 0.85rem 1.05rem 0.85rem 0.95rem;
-  background: linear-gradient(155deg, #0b1d3f 0%, #3e0d6e 42%, #7e1c8a 100%);
+  background: linear-gradient(90deg, #3a3a3a 0%, #000000 100%);
   color: #f8f4ff;
   letter-spacing: 0.03em;
   cursor: pointer;
@@ -88,7 +88,7 @@
   width: 100%;
   border-radius: 12px;
   padding: 0.75rem 0.9rem;
-  background: linear-gradient(155deg, #0b1d3f 0%, #3e0d6e 42%, #7e1c8a 100%);
+  background: linear-gradient(90deg, #000000 0%, #760585 50%, #000000 100%);
   color: #f8f4ff;
   font-weight: 700;
   text-decoration: none;

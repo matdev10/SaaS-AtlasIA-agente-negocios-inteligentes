@@ -113,6 +113,8 @@ export default function DashboardPage() {
   const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(true);
   const [savingCompany, setSavingCompany] = useState(false);
+  const [editingCompany, setEditingCompany] = useState(false);
+  const [editingPages, setEditingPages] = useState(false);
   const [savingDomains, setSavingDomains] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -122,7 +124,7 @@ export default function DashboardPage() {
   const [industry, setIndustry] = useState('');
   const [phone, setPhone] = useState('');
   const [language, setLanguage] = useState('es');
-  const [timezone, setTimezone] = useState('America/Argentina/Buenos_Aires');
+  const [timezone, setTimezone] = useState('America/Santiago');
   const [businessHours, setBusinessHours] = useState('');
   const [domainsText, setDomainsText] = useState('');
 
@@ -134,7 +136,7 @@ export default function DashboardPage() {
     setIndustry(data.industry ?? '');
     setPhone(data.phone ?? '');
     setLanguage(data.language ?? 'es');
-    setTimezone(data.timezone ?? 'America/Argentina/Buenos_Aires');
+    setTimezone(data.timezone ?? 'America/Santiago');
     setBusinessHours(data.businessHours ?? '');
     const primaryDomains =
       data.deployment.widgets[0]?.allowedDomains ??
@@ -191,6 +193,7 @@ export default function DashboardPage() {
       });
       const refreshed = await api<CompanyOverview>('/companies/me');
       applyOverview(refreshed);
+      setEditingCompany(false);
       setInfo(
         refreshed.onboardingStep !== 'WELCOME'
           ? 'Perfil guardado. Onboarding avanzado.'
@@ -227,6 +230,7 @@ export default function DashboardPage() {
 
       const refreshed = await api<CompanyOverview>('/companies/me');
       applyOverview(refreshed);
+      setEditingPages(false);
       setInfo('Páginas de despliegue guardadas');
     } catch (err) {
       setError(
@@ -253,9 +257,9 @@ export default function DashboardPage() {
     <main className={`${dash.page} ${syne.variable} ${dmSans.variable}`}>
       <header className={dash.topbar}>
         <div>
-          <p className={dash.brand}>AtlasIA</p>
+          <p className={dash.brand}>SOPHIA IA</p>
           <p className={dash.hello}>
-            {overview ? overview.name : 'Tu espacio'} · {user.name}
+            software development
           </p>
         </div>
         <button type="button" className={dash.ghost} onClick={logout}>
@@ -271,7 +275,7 @@ export default function DashboardPage() {
           <p className={dash.muted}>Cargando tu perfil…</p>
         </section>
       ) : (
-        <>
+        <div className={dash.stack}>
           <section className={dash.hero}>
             <div className={dash.heroMain}>
               <p className={dash.eyebrow}>Perfil de empresa</p>
@@ -368,12 +372,44 @@ export default function DashboardPage() {
               aria-labelledby="profile-title"
             >
               <div className={dash.cardHead}>
-                <h2 id="profile-title">Datos de la empresa</h2>
-                <p className={dash.muted}>
-                  Completá rubro y sitio web para avanzar el onboarding.
-                </p>
+                <div className={dash.profileHead}>
+                  <div>
+                    <h2 id="profile-title">Datos de la empresa</h2>
+                    <p className={dash.muted}>
+                      {editingCompany
+                        ? 'Modificá los datos y guardá los cambios.'
+                        : 'Datos guardados de tu empresa.'}
+                    </p>
+                  </div>
+                  {editingCompany ? null : (
+                    <button
+                      type="button"
+                      className={dash.editButton}
+                      aria-label="Editar datos de la empresa"
+                      onClick={() => setEditingCompany(true)}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M4 16.5V20h3.5L18.8 8.7l-3.5-3.5L4 16.5z"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M13.8 6.7l3.5 3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
 
+              {editingCompany ? (
               <form className={dash.form} onSubmit={saveCompany}>
                 <label className={dash.field} htmlFor="company-name">
                   <span>Nombre comercial</span>
@@ -462,44 +498,63 @@ export default function DashboardPage() {
                     placeholder="Lun a Vie, 9 a 18 hs"
                   />
                 </label>
-                <button
-                  type="submit"
-                  className={dash.cta}
-                  disabled={savingCompany}
-                >
-                  {savingCompany ? 'Guardando…' : 'Guardar perfil'}
-                </button>
+                <div className={dash.formActions}>
+                  <button
+                    type="submit"
+                    className={dash.cta}
+                    disabled={savingCompany}
+                  >
+                    {savingCompany ? 'Guardando…' : 'Guardar perfil'}
+                  </button>
+                  <button
+                    type="button"
+                    className={dash.cancelButton}
+                    disabled={savingCompany}
+                    onClick={() => {
+                      if (overview) applyOverview(overview);
+                      setEditingCompany(false);
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
               </form>
-
-              <div className={dash.planBox}>
-                <p className={dash.sectionLabel}>Cuenta</p>
-                <p className={dash.planName}>
-                  {user.name}{' '}
-                  <span className={dash.badge}>{user.role}</span>
-                </p>
-                <p className={dash.muted}>{user.email}</p>
-                <p className={dash.planName} style={{ marginTop: '0.85rem' }}>
-                  Plan {overview.plan?.name ?? 'Free'}{' '}
-                  <span className={dash.badge}>
-                    {statusLabel(
-                      overview.subscription?.status ?? overview.status,
-                    )}
-                  </span>
-                </p>
-                {overview.plan ? (
-                  <ul className={dash.planLimits}>
-                    <li>Hasta {overview.plan.maxAgents} agentes</li>
-                    <li>Hasta {overview.plan.maxDocuments} documentos</li>
-                    <li>
-                      Hasta {overview.plan.maxConversations} conversaciones
-                    </li>
-                    <li>
-                      Widget{' '}
-                      {overview.plan.includesWidget ? 'incluido' : 'no incluido'}
-                    </li>
-                  </ul>
-                ) : null}
-              </div>
+              ) : (
+                <dl className={dash.profileList}>
+                  {[
+                    ['Nombre comercial', companyName],
+                    ['Email de contacto', contactEmail],
+                    ['Rubro / industria', industry],
+                    ['Sitio web', website],
+                    ['Teléfono', phone],
+                    [
+                      'Idioma principal',
+                      language === 'en'
+                        ? 'English'
+                        : language === 'pt'
+                          ? 'Português'
+                          : 'Español',
+                    ],
+                    [
+                      'Zona horaria',
+                      {
+                        'America/Argentina/Buenos_Aires': 'Argentina (Buenos Aires)',
+                        'America/Santiago': 'Chile (Santiago)',
+                        'America/Bogota': 'Colombia (Bogotá)',
+                        'America/Mexico_City': 'México',
+                        'America/Lima': 'Perú (Lima)',
+                        'Europe/Madrid': 'España (Madrid)',
+                      }[timezone] ?? timezone,
+                    ],
+                    ['Horario de atención', businessHours],
+                  ].map(([label, value]) => (
+                    <div key={label} className={dash.profileItem}>
+                      <dt>{label}</dt>
+                      <dd>{value?.trim() ? value : 'Sin dato'}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
             </section>
 
             <section className={dash.card} aria-labelledby="deploy-title">
@@ -511,11 +566,74 @@ export default function DashboardPage() {
               </div>
 
               <div className={dash.pagesBox}>
-                <p className={dash.sectionLabel}>Páginas configuradas</p>
-                {overview.deployment.pages.length === 0 ? (
-                  <p className={dash.muted}>
-                    Todavía no hay páginas. Agregá tu sitio o rutas abajo.
-                  </p>
+                <div className={dash.pagesHead}>
+                  <p className={dash.sectionLabel}>Páginas configuradas</p>
+                  {primaryAgent && !editingPages ? (
+                    <button
+                      type="button"
+                      className={dash.editButton}
+                      aria-label="Editar páginas"
+                      onClick={() => setEditingPages(true)}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M4 16.5V20h3.5L18.8 8.7l-3.5-3.5L4 16.5z"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M13.8 6.7l3.5 3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                  ) : null}
+                </div>
+                {editingPages ? (
+                  <form className={dash.form} onSubmit={saveDeployment}>
+                    <label className={dash.field} htmlFor="deploy-pages">
+                      <span>Una por línea</span>
+                      <textarea
+                        id="deploy-pages"
+                        rows={4}
+                        value={domainsText}
+                        onChange={(e) => setDomainsText(e.target.value)}
+                        placeholder={
+                          'https://tu-sitio.com\nhttps://tu-sitio.com/ayuda'
+                        }
+                      />
+                    </label>
+                    <div className={dash.formActions}>
+                      <button
+                        type="submit"
+                        className={dash.cta}
+                        disabled={savingDomains}
+                      >
+                        {savingDomains ? 'Guardando…' : 'Guardar páginas'}
+                      </button>
+                      <button
+                        type="button"
+                        className={dash.cancelButton}
+                        disabled={savingDomains}
+                        onClick={() => {
+                          const primaryDomains =
+                            overview.deployment.widgets[0]?.allowedDomains ??
+                            (overview.website ? [overview.website] : []);
+                          setDomainsText(primaryDomains.join('\n'));
+                          setEditingPages(false);
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                ) : overview.deployment.pages.length === 0 ? (
+                  <p className={dash.muted}>Todavía no hay páginas.</p>
                 ) : (
                   <ul className={dash.pageList}>
                     {overview.deployment.pages.map((page) => (
@@ -580,31 +698,53 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {primaryAgent ? (
-                <form className={dash.form} onSubmit={saveDeployment}>
-                  <label className={dash.field} htmlFor="deploy-pages">
-                    <span>Páginas / dominios (una por línea)</span>
-                    <textarea
-                      id="deploy-pages"
-                      rows={4}
-                      value={domainsText}
-                      onChange={(e) => setDomainsText(e.target.value)}
-                      placeholder={
-                        'https://tu-sitio.com\nhttps://tu-sitio.com/ayuda'
-                      }
-                    />
-                  </label>
-                  <button
-                    type="submit"
-                    className={dash.cta}
-                    disabled={savingDomains}
-                  >
-                    {savingDomains ? 'Guardando…' : 'Guardar páginas'}
-                  </button>
-                </form>
-              ) : null}
             </section>
           </div>
+
+          <section className={dash.card} aria-labelledby="account-title">
+            <div className={dash.cardHead}>
+              <h2 id="account-title">Cuenta</h2>
+              <p className={dash.muted}>
+                Usuario y plan de esta empresa.
+              </p>
+            </div>
+            <div className={dash.list}>
+              <div className={`${dash.listItem} ${dash.accountRow}`}>
+                <div>
+                  <strong>{user.name}</strong>
+                  <p className={dash.muted}>{user.email}</p>
+                </div>
+                <span className={dash.badge}>{user.role}</span>
+              </div>
+              <div className={`${dash.listItem} ${dash.accountRow}`}>
+                <div>
+                  <strong>Plan {overview.plan?.name ?? 'Free'}</strong>
+                  {overview.plan ? (
+                    <ul className={dash.planLimits}>
+                      <li>Hasta {overview.plan.maxAgents} agentes</li>
+                      <li>Hasta {overview.plan.maxDocuments} documentos</li>
+                      <li>
+                        Hasta {overview.plan.maxConversations} conversaciones
+                      </li>
+                      <li>
+                        Widget{' '}
+                        {overview.plan.includesWidget
+                          ? 'incluido'
+                          : 'no incluido'}
+                      </li>
+                    </ul>
+                  ) : (
+                    <p className={dash.muted}>Sin plan asignado.</p>
+                  )}
+                </div>
+                <span className={dash.badge}>
+                  {statusLabel(
+                    overview.subscription?.status ?? overview.status,
+                  )}
+                </span>
+              </div>
+            </div>
+          </section>
 
           <section className={dash.card} aria-labelledby="agents-title">
             <div className={dash.cardHeadRow}>
@@ -641,7 +781,7 @@ export default function DashboardPage() {
               ) : null}
             </div>
           </section>
-        </>
+        </div>
       )}
     </main>
   );

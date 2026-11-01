@@ -215,7 +215,7 @@
   margin-top: 0.25rem;
   border: 0;
   border-radius: 12px;
-  background: linear-gradient(90deg, #0c061b 0%, #6d35d6 100%);
+  background: linear-gradient(90deg, #6d35d6 0%, #ffffff 100%);
   box-shadow: 0 10px 24px rgba(109, 53, 214, 0.28);
   color: #ffffff;
   font: inherit;
