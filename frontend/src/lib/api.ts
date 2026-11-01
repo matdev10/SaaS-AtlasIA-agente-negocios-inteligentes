@@ -31,6 +31,7 @@ export type DocumentItem = {
   type: string;
   status: string;
   extractedText?: string | null;
+  createdAt?: string;
 };
 
 export type OnboardingStep =

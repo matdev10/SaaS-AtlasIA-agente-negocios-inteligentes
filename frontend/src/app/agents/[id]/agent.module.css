@@ -30,6 +30,34 @@
   line-height: 1.5;
 }
 
+.deactivate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 1.5rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 11px;
+  background: #d21b1b;
+  color: #fff;
+  font: inherit;
+  font-size: 0.83rem;
+  font-weight: 750;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.deactivate:hover:not(:disabled) {
+  background: #b51616;
+}
+
+.deactivate:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 /* =========================================================
    TOPBAR
 ========================================================= */
@@ -828,6 +856,105 @@
   border-top: 1px solid var(--line);
 }
 
+.docCategory {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.docCategoryToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.72rem 0.85rem;
+
+  border: 1px solid #eeeaf3;
+  border-radius: 13px;
+  background: #faf9fc;
+  color: #292033;
+
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.docCategoryToggle:hover {
+  border-color: #e4dced;
+  background: #f7f4fa;
+}
+
+.docChevron {
+  margin-left: auto;
+  color: #8d8498;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.docCategoryBody {
+  display: grid;
+  gap: 0.45rem;
+  margin-left: 0.85rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid #eeeaf3;
+}
+
+.docItemMain {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.docReveal {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.docRemove {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #8d8498;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.docRemove:hover:not(:disabled) {
+  color: #b3261e;
+  background: #fff6f7;
+}
+
+.docRemove:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.docPreview {
+  margin: 0.7rem 0 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid #f0ecf5;
+
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  max-height: 9rem;
+  overflow: auto;
+}
+
 .docItem {
   display: flex;
   justify-content: space-between;
@@ -850,6 +977,11 @@
 .docItem:hover {
   border-color: #d9c7f2;
   background: #fdfbff;
+}
+
+.docItemStack {
+  display: grid;
+  justify-content: stretch;
 }
 
 .docItem > div {

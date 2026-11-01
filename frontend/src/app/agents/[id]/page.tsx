@@ -138,10 +138,13 @@ export default function AgentDetailPage() {
   const router = useRouter();
   const agentId = params.id;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewFrameRef = useRef<HTMLIFrameElement>(null);
   const [mounted, setMounted] = useState(false);
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
+  const [promptsOpen, setPromptsOpen] = useState(false);
+  const [openDocId, setOpenDocId] = useState<string | null>(null);
   const [tone, setTone] = useState('');
   const [selectedToneId, setSelectedToneId] = useState<string | null>(null);
   const [selectedInstructionIds, setSelectedInstructionIds] = useState<string[]>(
@@ -149,6 +152,7 @@ export default function AgentDetailPage() {
   );
   const [instructions, setInstructions] = useState('');
   const [welcomeMessage, setWelcomeMessage] = useState('');
+  const [previewWelcome, setPreviewWelcome] = useState('');
   const [selectedWelcomeId, setSelectedWelcomeId] = useState<string | null>(
     null,
   );
@@ -164,8 +168,10 @@ export default function AgentDetailPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [trainingId, setTrainingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [chatting, setChatting] = useState(false);
   const [activating, setActivating] = useState(false);
+  const [deactivating, setDeactivating] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [previewTick, setPreviewTick] = useState(0);
   const [previewWidgetId, setPreviewWidgetId] = useState<string | null>(null);
@@ -191,6 +197,7 @@ export default function AgentDetailPage() {
     ).map((option) => option.id);
     setSelectedInstructionIds(matchedInstructions);
     setWelcomeMessage(agentData.welcomeMessage ?? '');
+    setPreviewWelcome(agentData.welcomeMessage ?? '');
     const matchedWelcome =
       WELCOME_OPTIONS.find((option) => option.value === agentData.welcomeMessage)
         ?.id ?? null;
@@ -210,6 +217,25 @@ export default function AgentDetailPage() {
       setPreviewChecked(true);
     }
   }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setPreviewWelcome(welcomeMessage);
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [welcomeMessage]);
+
+  function pushPreviewWelcome(text = previewWelcome) {
+    const welcome = text.trim() || '¡Hola! ¿En qué te puedo ayudar?';
+    previewFrameRef.current?.contentWindow?.postMessage(
+      { type: 'atlasia-set-welcome', welcome },
+      API_URL,
+    );
+  }
+
+  useEffect(() => {
+    pushPreviewWelcome();
+  }, [previewWelcome]);
 
   useEffect(() => {
     const stored = getStoredUser();
@@ -246,6 +272,7 @@ export default function AgentDetailPage() {
     if (!option) return;
     setSelectedWelcomeId(option.id);
     setWelcomeMessage(option.value);
+    setPreviewWelcome(option.value);
   }
 
   async function saveAgent(event: FormEvent) {
@@ -337,6 +364,21 @@ export default function AgentDetailPage() {
     }
   }
 
+  async function deleteDocument(documentId: string) {
+    setError('');
+    setInfo('');
+    setDeletingId(documentId);
+    try {
+      await api(`/documents/${documentId}`, { method: 'DELETE' });
+      setDocuments((current) => current.filter((doc) => doc.id !== documentId));
+      setOpenDocId((current) => (current === documentId ? null : current));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo eliminar');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   async function trainDocument(documentId: string) {
     setError('');
     setInfo('');
@@ -371,6 +413,24 @@ export default function AgentDetailPage() {
       setError(err instanceof Error ? err.message : 'No se pudo enviar el mensaje');
     } finally {
       setChatting(false);
+    }
+  }
+
+  async function deactivateAgent() {
+    setError('');
+    setInfo('');
+    setDeactivating(true);
+    try {
+      const updated = await api<Agent>(`/agents/${agentId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'PAUSED' }),
+      });
+      setAgent(updated);
+      setInfo('Agente desactivado');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo desactivar');
+    } finally {
+      setDeactivating(false);
     }
   }
 
@@ -452,6 +512,11 @@ export default function AgentDetailPage() {
   }
 
   if (!mounted) return null;
+
+  const promptDocs = documents.filter((doc) =>
+    /^prompts?\b/i.test(doc.name.trim()),
+  );
+  const otherDocs = documents.filter((doc) => !promptDocs.includes(doc));
 
   return (
     <main className={`${styles.page} ${syne.variable} ${dmSans.variable}`}>
@@ -747,29 +812,125 @@ export default function AgentDetailPage() {
                 </p>
               </div>
             ) : (
-              documents.map((doc) => (
-                <div key={doc.id} className={styles.docItem}>
-                  <div>
-                    <strong>{doc.name}</strong>
-                    <p className={styles.docMeta}>
-                      {doc.type} ·{' '}
-                      <span className={styles.docStatus}>
-                        {documentStatusLabel(doc.status)}
-                      </span>
-                    </p>
-                  </div>
-                  {doc.status !== 'PROCESSED' ? (
+              <>
+                {promptDocs.length > 0 ? (
+                  <div className={styles.docCategory}>
                     <button
                       type="button"
-                      className={styles.btnSecondary}
-                      onClick={() => trainDocument(doc.id)}
-                      disabled={trainingId === doc.id}
+                      className={styles.docCategoryToggle}
+                      aria-expanded={promptsOpen}
+                      onClick={() => setPromptsOpen((open) => !open)}
                     >
-                      {trainingId === doc.id ? 'Entrenando…' : 'Entrenar'}
+                      <span>Prompts</span>
+                      <span className={styles.docMeta}>{promptDocs.length}</span>
+                      <span className={styles.docChevron} aria-hidden="true">
+                        {promptsOpen ? '−' : '+'}
+                      </span>
                     </button>
-                  ) : null}
-                </div>
-              ))
+                    {promptsOpen ? (
+                      <div className={styles.docCategoryBody}>
+                        {promptDocs.map((doc) => (
+                          <div key={doc.id} className={`${styles.docItem} ${styles.docItemStack}`}>
+                            <div className={styles.docItemMain}>
+                              <button
+                                type="button"
+                                className={styles.docReveal}
+                                aria-expanded={openDocId === doc.id}
+                                onClick={() =>
+                                  setOpenDocId((current) =>
+                                    current === doc.id ? null : doc.id,
+                                  )
+                                }
+                              >
+                                <strong>{doc.name}</strong>
+                                <p className={styles.docMeta}>
+                                  {doc.type} ·{' '}
+                                  <span className={styles.docStatus}>
+                                    {documentStatusLabel(doc.status)}
+                                  </span>
+                                  {doc.createdAt
+                                    ? ` · Subido ${new Intl.DateTimeFormat('es-CL', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric',
+                                      }).format(new Date(doc.createdAt))}`
+                                    : ''}
+                                </p>
+                              </button>
+                              {doc.status !== 'PROCESSED' ? (
+                                <button
+                                  type="button"
+                                  className={styles.btnSecondary}
+                                  onClick={() => trainDocument(doc.id)}
+                                  disabled={trainingId === doc.id}
+                                >
+                                  {trainingId === doc.id
+                                    ? 'Entrenando…'
+                                    : 'Entrenar'}
+                                </button>
+                              ) : null}
+                              <button
+                                type="button"
+                                className={styles.docRemove}
+                                aria-label={`Eliminar ${doc.name}`}
+                                onClick={() => deleteDocument(doc.id)}
+                                disabled={deletingId === doc.id}
+                              >
+                                ×
+                              </button>
+                            </div>
+                            {openDocId === doc.id ? (
+                              <p className={styles.docPreview}>
+                                {doc.extractedText?.trim() ||
+                                  'Este documento no tiene texto para mostrar.'}
+                              </p>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+                {otherDocs.map((doc) => (
+                  <div key={doc.id} className={styles.docItem}>
+                    <div>
+                      <strong>{doc.name}</strong>
+                      <p className={styles.docMeta}>
+                        {doc.type} ·{' '}
+                        <span className={styles.docStatus}>
+                          {documentStatusLabel(doc.status)}
+                        </span>
+                        {doc.createdAt
+                          ? ` · Subido ${new Intl.DateTimeFormat('es-CL', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            }).format(new Date(doc.createdAt))}`
+                          : ''}
+                      </p>
+                    </div>
+                    {doc.status !== 'PROCESSED' ? (
+                      <button
+                        type="button"
+                        className={styles.btnSecondary}
+                        onClick={() => trainDocument(doc.id)}
+                        disabled={trainingId === doc.id}
+                      >
+                        {trainingId === doc.id ? 'Entrenando…' : 'Entrenar'}
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      className={styles.docRemove}
+                      aria-label={`Eliminar ${doc.name}`}
+                      onClick={() => deleteDocument(doc.id)}
+                      disabled={deletingId === doc.id}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </>
             )}
           </div>
         </section>
@@ -905,9 +1066,11 @@ export default function AgentDetailPage() {
           </div>
           {previewWidgetId ? (
             <iframe
+              ref={previewFrameRef}
               className={styles.previewFrame}
               title="Vista previa del chat del agente"
               src={`${API_URL}/demo-nuvcore.html?widget=${encodeURIComponent(previewWidgetId)}&api=${encodeURIComponent(API_URL)}&open=1${previewTick ? `&t=${previewTick}` : ''}`}
+              onLoad={() => pushPreviewWelcome()}
             />
           ) : (
             <p className={styles.cardHelp}>
@@ -918,6 +1081,19 @@ export default function AgentDetailPage() {
           )}
         </aside>
       </div>
+
+      <button
+        type="button"
+        className={styles.deactivate}
+        onClick={deactivateAgent}
+        disabled={deactivating || agent?.status === 'PAUSED'}
+      >
+        {deactivating
+          ? 'Desactivando…'
+          : agent?.status === 'PAUSED'
+            ? 'Agente desactivado'
+            : 'Desactivar agente'}
+      </button>
     </main>
   );
 }

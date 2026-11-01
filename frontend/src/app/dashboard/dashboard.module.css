@@ -44,6 +44,61 @@
   margin-bottom: 1.5rem;
 }
 
+.heroTools {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(12, 6, 27, 0.48);
+}
+
+.modal {
+  width: min(680px, 100%);
+  max-height: min(88vh, 860px);
+  overflow: auto;
+  display: grid;
+  justify-items: end;
+  gap: 0.65rem;
+}
+
+.modal .card {
+  width: 100%;
+}
+
+.modalClose {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.heroBrand {
+  position: absolute;
+  right: clamp(1.75rem, 3.5vw, 2.5rem);
+  bottom: 1.25rem;
+  z-index: 2;
+  text-align: right;
+}
+
+.hero .brand {
+  color: #fff;
+}
+
+.hero .hello {
+  color: rgba(255, 255, 255, 0.72);
+}
+
 .brand {
   margin: 0;
   font-family: var(--display);
@@ -107,12 +162,12 @@
   isolation: isolate;
   overflow: hidden;
 
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr);
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
 
   padding: clamp(1.75rem, 3.5vw, 2.5rem);
+  padding-bottom: 6.5rem;
 
   border-radius: 28px;
   color: #fff;
@@ -123,6 +178,14 @@
     #0c061b;
 
   box-shadow: 0 24px 60px rgba(12, 6, 27, 0.18);
+}
+
+.heroBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr);
+  align-items: center;
+  gap: 1.5rem;
+  min-width: 0;
 }
 
 .heroMain {
@@ -142,6 +205,35 @@
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: #0a84e0;
+}
+
+.companyTitle {
+  display: inline-flex;
+  align-items: flex-start;
+  max-width: 100%;
+  gap: 0.2rem;
+}
+
+.companyTitle .editButton {
+  width: auto;
+  height: auto;
+  margin-top: 0.2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+}
+
+.companyTitle .editButton svg {
+  width: 55px;
+  height: 22px;
+}
+
+.companyTitle .editButton:hover {
+  border-color: transparent;
+  background: transparent;
+  color: #d7c6ff;
 }
 
 .companyName {
@@ -164,8 +256,20 @@
 
 .heroSupport {
   margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: rgba(255, 255, 255, 0.82);
+  font: inherit;
   font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.heroSupport:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .metaRow {
@@ -196,16 +300,20 @@
 
   display: grid;
   align-content: center;
-  justify-items: start;
-  gap: 0.65rem;
+  justify-items: center;
+  gap: 0.45rem;
 
-  min-width: 0;
-  padding: 1.35rem;
+  width: min(100%, 280px);
+  aspect-ratio: 1;
+  justify-self: end;
+  margin-right: 70px;
+  padding: 2.6rem 2.1rem;
 
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 20px;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(6px);
+  text-align: center;
 }
 
 .panelMark {
@@ -219,16 +327,18 @@
 
 .asideTitle {
   margin: 0;
+  max-width: 9.5rem;
   font-family: var(--display);
-  font-size: 2rem;
+  font-size: 1.65rem;
   font-weight: 400;
   letter-spacing: 0.02em;
-  line-height: 1;
+  line-height: 0.95;
   text-transform: uppercase;
   color: #fff;
 }
 
 .heroAside .muted {
+  max-width: 11rem;
   color: rgba(255, 255, 255, 0.72);
 }
 
@@ -889,9 +999,14 @@
 /* ---------- Tablet ---------- */
 
 @media (max-width: 960px) {
-  .hero,
+  .heroBody,
   .grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .heroAside {
+    justify-self: center;
+    margin-right: 0;
   }
 
   .steps,
@@ -914,11 +1029,18 @@
 
   .hero {
     padding: 1.4rem;
+    padding-bottom: 5.75rem;
     border-radius: 22px;
   }
 
+  .heroBrand {
+    right: 1.4rem;
+    bottom: 1.1rem;
+  }
+
   .heroAside {
-    padding: 1.1rem;
+    width: min(100%, 250px);
+    padding: 2.15rem 1.6rem;
   }
 
   .steps,

@@ -72,7 +72,7 @@ export function SupportFab() {
         ref={buttonRef}
         type="button"
         className={styles.fab}
-        aria-label={open ? 'Cerrar soporte' : 'Abrir soporte'}
+        aria-label={open ? 'Cerrar soporte UI BFF' : 'Abrir soporte UI BFF'}
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((value) => !value)}
@@ -102,7 +102,7 @@ export function SupportFab() {
             />
           </svg>
         )}
-        <span className={styles.fabLabel}>Soporte</span>
+        <span className={styles.fabLabel}>Soporte UI BFF</span>
       </button>
     </div>
   );

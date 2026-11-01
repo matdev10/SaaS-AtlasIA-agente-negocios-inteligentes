@@ -11,14 +11,14 @@
         min-height: 100%;
         background: #07060b;
       }
-      #atlasia-panel {
+      #atlasia-panel:not([data-dragged]):not([data-resized]) {
         left: 50% !important;
         right: auto !important;
         top: 50% !important;
         bottom: auto !important;
         transform: translate(-50%, -50%) !important;
       }
-      #atlasia-panel:not([data-size="sm"]):not([data-size="md"]) {
+      #atlasia-panel:not([data-size="sm"]):not([data-size="md"]):not([data-resized]) {
         height: min(650px, calc(100dvh - 48px)) !important;
       }
       #atlasia-fab {
@@ -60,6 +60,16 @@
         }
 
         var open = params.get("open") === "1" ? ' data-atlasia-open="true"' : "";
+        var welcome = (params.get("welcome") || "").slice(0, 500);
+        var welcomeAttr = welcome
+          ? ' data-atlasia-welcome="' +
+            welcome
+              .replace(/&/g, "&amp;")
+              .replace(/"/g, "&quot;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;") +
+            '"'
+          : "";
         document.write(
           '<script src="' +
             api +
@@ -70,6 +80,8 @@
             '" data-atlasia-api="' +
             api +
             '"' +
+            welcomeAttr +
+            ' data-atlasia-preview="true"' +
             open +
             "></" +
             "script>"

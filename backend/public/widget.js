@@ -7,6 +7,9 @@
 
   var widgetId = current.getAttribute("data-atlasia-widget");
   var apiBase = (current.getAttribute("data-atlasia-api") || "").replace(/\/$/, "");
+  var welcomeOverride = (current.getAttribute("data-atlasia-welcome") || "").trim();
+  var previewMode = current.getAttribute("data-atlasia-preview") === "true";
+  var liveWelcome = welcomeOverride;
 
   if (!widgetId || !apiBase) {
     console.error("[AtlasIA] Faltan los atributos del widget o la API.");
@@ -83,9 +86,42 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 16px;
+        padding: 16px 30px 16px 16px;
         background: rgba(255,255,255,.025);
         border-bottom: 1px solid rgba(255,255,255,.08);
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+      }
+
+      #atlasia-panel[data-dragging="true"] #atlasia-head {
+        cursor: grabbing;
+      }
+
+      #atlasia-resize {
+        position: absolute;
+        top: 7px;
+        right: 7px;
+        z-index: 2;
+        width: 18px;
+        height: 18px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+
+      #atlasia-resize::before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 9px;
+        height: 9px;
+        border-top: 2px solid rgba(255,255,255,.5);
+        border-right: 2px solid rgba(255,255,255,.5);
+        border-radius: 0 3px 0 0;
       }
 
       #atlasia-mark {
@@ -103,16 +139,6 @@
       #atlasia-mark svg { width: 23px; height: 23px; }
 
       #atlasia-head-copy { min-width: 0; flex: 1; }
-
-      #atlasia-brand {
-        margin-right: 2px;
-        color: rgba(247,243,255,.32);
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: .12em;
-        text-transform: uppercase;
-        white-space: nowrap;
-      }
 
       #atlasia-head strong {
         display: block;
@@ -365,14 +391,19 @@
         #atlasia-footer { padding: 10px 14px 12px; }
       }
 
+      #atlasia-panel[data-size="sm"] {
+        width: min(300px, calc(100vw - 24px));
+        height: min(420px, calc(100dvh - 96px));
+      }
+
       #atlasia-panel[data-size="md"] {
         width: min(340px, calc(100vw - 24px));
         height: min(520px, calc(100dvh - 96px));
       }
 
-      #atlasia-panel[data-size="sm"] {
-        width: min(300px, calc(100vw - 24px));
-        height: min(420px, calc(100dvh - 96px));
+      #atlasia-panel[data-size="lg"] {
+        width: min(400px, calc(100vw - 24px));
+        height: min(650px, calc(100dvh - 96px));
       }
 
       @media(prefers-reduced-motion:reduce) {
@@ -438,7 +469,6 @@
   mark.innerHTML = atlasMark;
   var headCopy = el("div", { id: "atlasia-head-copy" });
   var title = el("strong", { text: "" });
-  var brand = el("b", { id: "atlasia-brand", text: "Atlas IA" });
   var subtitle = el("span");
   var status = el("i", { id: "atlasia-status" });
   var close = el("button", {
@@ -454,7 +484,6 @@
   headCopy.appendChild(subtitle);
   head.appendChild(mark);
   head.appendChild(headCopy);
-  head.appendChild(brand);
   head.appendChild(close);
 
   var messages = el("div", { id: "atlasia-messages", "aria-live": "polite" });
@@ -484,6 +513,13 @@
   footer.appendChild(footerLeft);
   footer.appendChild(el("span", { text: "AtlasIA · AI Assistant" }));
 
+  var resizeHandle = el("button", {
+    id: "atlasia-resize",
+    type: "button",
+    "aria-label": "Cambiar tamaño del chat",
+  });
+
+  panel.appendChild(resizeHandle);
   panel.appendChild(head);
   panel.appendChild(messages);
   panel.appendChild(form);
@@ -512,6 +548,22 @@
     messages.scrollTop = messages.scrollHeight;
   }
 
+  function applyLiveWelcome(text) {
+    var next = String(text || "").trim().slice(0, 500);
+    if (!next) return;
+    liveWelcome = next;
+    var bubble = messages.querySelector(".atlasia-bubble.atlasia-assistant");
+    if (bubble) bubble.textContent = next;
+  }
+
+  if (previewMode) {
+    window.addEventListener("message", function (event) {
+      var data = event.data;
+      if (!data || data.type !== "atlasia-set-welcome") return;
+      applyLiveWelcome(data.welcome);
+    });
+  }
+
   function setOpen(open) {
     state.open = open;
     panel.classList.toggle("open", open);
@@ -519,7 +571,11 @@
     fab.setAttribute("aria-label", "Abrir chat AtlasIA");
     fab.innerHTML = atlasMark;
 
-    if (open) input.focus();
+    if (open) {
+      applySavedSize();
+      applySavedPosition();
+      input.focus();
+    }
   }
 
   fab.addEventListener("click", function () {
@@ -532,6 +588,153 @@
 
   close.addEventListener("click", function () {
     setOpen(false);
+  });
+
+  var positionKey = "atlasia-panel-pos:" + widgetId;
+  var drag = null;
+
+  function readSavedPosition() {
+    try {
+      var raw = localStorage.getItem(positionKey);
+      if (!raw) return null;
+      var pos = JSON.parse(raw);
+      if (!pos || typeof pos.left !== "number" || typeof pos.top !== "number") {
+        return null;
+      }
+      return pos;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function clampPanel(left, top) {
+    var width = panel.offsetWidth;
+    var margin = 8;
+    var maxLeft = Math.max(margin, window.innerWidth - width - margin);
+    var maxTop = Math.max(margin, window.innerHeight - 64);
+
+    return {
+      left: Math.round(Math.min(Math.max(margin, left), maxLeft)),
+      top: Math.round(Math.min(Math.max(margin, top), maxTop)),
+    };
+  }
+
+  function placePanel(left, top, persist) {
+    if (!panel.offsetWidth) return;
+    var next = clampPanel(left, top);
+    panel.style.left = next.left + "px";
+    panel.style.top = next.top + "px";
+    panel.style.right = "auto";
+    panel.style.bottom = "auto";
+    panel.style.transform = "none";
+    panel.setAttribute("data-dragged", "true");
+
+    if (!persist) return;
+
+    try {
+      localStorage.setItem(positionKey, JSON.stringify(next));
+    } catch (error) {}
+  }
+
+  function applySavedPosition() {
+    if (drag || !state.open || !panel.offsetWidth) return;
+    var saved = readSavedPosition();
+    if (!saved) return;
+    placePanel(saved.left, saved.top, false);
+  }
+
+  function endDrag(event) {
+    if (!drag) return;
+    drag = null;
+    panel.removeAttribute("data-dragging");
+
+    if (
+      event &&
+      head.hasPointerCapture &&
+      head.hasPointerCapture(event.pointerId)
+    ) {
+      head.releasePointerCapture(event.pointerId);
+    }
+
+    var rect = panel.getBoundingClientRect();
+    placePanel(rect.left, rect.top, true);
+  }
+
+  head.addEventListener("pointerdown", function (event) {
+    if (event.button !== 0) return;
+    if (event.target.closest && event.target.closest("button")) return;
+
+    var rect = panel.getBoundingClientRect();
+    drag = {
+      dx: event.clientX - rect.left,
+      dy: event.clientY - rect.top,
+    };
+    placePanel(rect.left, rect.top, false);
+    panel.setAttribute("data-dragging", "true");
+    try {
+      head.setPointerCapture(event.pointerId);
+    } catch (error) {}
+    event.preventDefault();
+  });
+
+  head.addEventListener("pointermove", function (event) {
+    if (!drag) return;
+    placePanel(event.clientX - drag.dx, event.clientY - drag.dy, false);
+  });
+
+  head.addEventListener("pointerup", endDrag);
+  head.addEventListener("pointercancel", endDrag);
+
+  window.addEventListener("resize", function () {
+    if (panel.getAttribute("data-dragged") !== "true" || !panel.offsetWidth) return;
+    var rect = panel.getBoundingClientRect();
+    placePanel(rect.left, rect.top, true);
+  });
+
+  var sizeKey = "atlasia-panel-size:" + widgetId;
+  var sizeOrder = ["sm", "md", "lg"];
+  var sizeLabel = { sm: "Chico", md: "Mediano", lg: "Grande" };
+
+  function readSavedSize() {
+    try {
+      var raw = localStorage.getItem(sizeKey);
+      if (raw === "sm" || raw === "md" || raw === "lg") return raw;
+      if (raw) localStorage.removeItem(sizeKey);
+    } catch (error) {}
+    return null;
+  }
+
+  function applyWidgetSize(size, persist) {
+    if (size !== "sm" && size !== "md") size = "lg";
+    panel.style.width = "";
+    panel.style.height = "";
+    panel.removeAttribute("data-resized");
+    panel.setAttribute("data-size", size);
+    resizeHandle.setAttribute(
+      "aria-label",
+      "Tamaño " + sizeLabel[size] + ". Cambiar tamaño"
+    );
+    resizeHandle.title = sizeLabel[size];
+    if (!persist) return;
+
+    try {
+      localStorage.setItem(sizeKey, size);
+    } catch (error) {}
+  }
+
+  function applySavedSize() {
+    var saved = readSavedSize();
+    if (!saved) return;
+    applyWidgetSize(saved, false);
+  }
+
+  resizeHandle.addEventListener("click", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    var current = panel.getAttribute("data-size");
+    var index = sizeOrder.indexOf(current);
+    if (index < 0) index = 2;
+    applyWidgetSize(sizeOrder[(index + 1) % sizeOrder.length], true);
   });
 
   form.addEventListener("submit", function (event) {
@@ -627,21 +830,28 @@
       subtitle.replaceChildren(status, document.createTextNode("En línea"));
 
       var welcome =
-        config.welcomeMessage || "¡Hola! ¿En qué te puedo ayudar?";
+        liveWelcome ||
+        config.welcomeMessage ||
+        "¡Hola! ¿En qué te puedo ayudar?";
 
       addBubble("assistant", welcome);
 
-      if (config.position === "bottom-left") {
+      if (
+        config.position === "bottom-left" &&
+        panel.getAttribute("data-dragged") !== "true"
+      ) {
         fab.style.left = "20px";
         fab.style.right = "auto";
         panel.style.left = "20px";
         panel.style.right = "auto";
       }
 
-      panel.setAttribute(
-        "data-size",
-        config.size === "sm" || config.size === "md" ? config.size : "lg"
+      applyWidgetSize(
+        readSavedSize() ||
+          (config.size === "sm" || config.size === "md" ? config.size : "lg"),
+        false
       );
+      applySavedPosition();
     })
     .catch(function (error) {
       console.error("[AtlasIA] No se pudo cargar la configuración:", error);

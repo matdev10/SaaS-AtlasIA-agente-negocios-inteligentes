@@ -114,6 +114,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [savingCompany, setSavingCompany] = useState(false);
   const [editingCompany, setEditingCompany] = useState(false);
+  const [companyOpen, setCompanyOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [editingPages, setEditingPages] = useState(false);
   const [savingDomains, setSavingDomains] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -251,71 +253,141 @@ export default function DashboardPage() {
     }
   }
 
+  useEffect(() => {
+    if (!companyOpen && !accountOpen) return;
+
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return;
+      setCompanyOpen(false);
+      setAccountOpen(false);
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [companyOpen, accountOpen]);
+
   if (!user) return null;
+
+  const logoutButton = (
+    <button type="button" className={dash.ghost} onClick={logout}>
+      Salir
+    </button>
+  );
+
+  const brandBlock = (
+    <div>
+      <p className={dash.brand}>SOPHIA IA</p>
+      <p className={dash.hello}>software development</p>
+    </div>
+  );
+
+  const topbar = (
+    <header className={dash.topbar}>
+      {brandBlock}
+      {logoutButton}
+    </header>
+  );
 
   return (
     <main className={`${dash.page} ${syne.variable} ${dmSans.variable}`}>
-      <header className={dash.topbar}>
-        <div>
-          <p className={dash.brand}>SOPHIA IA</p>
-          <p className={dash.hello}>
-            software development
-          </p>
-        </div>
-        <button type="button" className={dash.ghost} onClick={logout}>
-          Salir
-        </button>
-      </header>
-
       {error ? <p className={dash.error}>{error}</p> : null}
       {info ? <p className={dash.info}>{info}</p> : null}
 
       {loading || !overview || !action ? (
-        <section className={dash.card}>
-          <p className={dash.muted}>Cargando tu perfil…</p>
-        </section>
+        <>
+          {topbar}
+          <section className={dash.card}>
+            <p className={dash.muted}>Cargando tu perfil…</p>
+          </section>
+        </>
       ) : (
         <div className={dash.stack}>
           <section className={dash.hero}>
-            <div className={dash.heroMain}>
-              <p className={dash.eyebrow}>Perfil de empresa</p>
-              <h1 className={dash.companyName}>{overview.name}</h1>
-              <p className={dash.heroSupport}>
-                {overview.industry ? `${overview.industry} · ` : ''}
-                Plan {overview.plan?.name ?? 'Free'} ·{' '}
-                {statusLabel(overview.status)}
-              </p>
-              <div className={dash.metaRow}>
-                <span>{overview.contactEmail}</span>
-                {overview.website ? (
-                  <a href={overview.website} target="_blank" rel="noreferrer">
-                    {overview.website}
-                  </a>
+            <div className={dash.heroTools}>{logoutButton}</div>
+            <div className={dash.heroBody}>
+              <div className={dash.heroMain}>
+                <p className={dash.eyebrow}>Perfil de empresa</p>
+                <div className={dash.companyTitle}>
+                  <h1 className={dash.companyName}>{overview.name}</h1>
+                  <button
+                    type="button"
+                    className={dash.editButton}
+                    aria-label="Editar datos de la empresa"
+                    onClick={() => {
+                      setEditingCompany(false);
+                      setCompanyOpen(true);
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        d="M4 16.5V20h3.5L18.8 8.7l-3.5-3.5L4 16.5z"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M13.8 6.7l3.5 3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className={dash.heroSupport}
+                  onClick={() => setAccountOpen(true)}
+                >
+                  {overview.industry ? `${overview.industry} · ` : ''}
+                  Plan {overview.plan?.name ?? 'Free'} ·{' '}
+                  {statusLabel(overview.status)}
+                </button>
+                <div className={dash.metaRow}>
+                  <span>{overview.contactEmail}</span>
+                  {overview.website ? (
+                    <a href={overview.website} target="_blank" rel="noreferrer">
+                      {overview.website}
+                    </a>
+                  ) : (
+                    <span>Sin sitio web configurado</span>
+                  )}
+                  {overview.phone ? <span>{overview.phone}</span> : null}
+                </div>
+              </div>
+
+              <div className={dash.heroAside}>
+                <p className={dash.panelMark}>
+                  {overview.onboardingCompleted
+                    ? 'Completado'
+                    : 'Siguiente paso'}
+                </p>
+                <h2 className={dash.asideTitle}>{action.title}</h2>
+                <p className={dash.muted}>{action.body}</p>
+                {action.href ? (
+                  <Link href={action.href} className={dash.cta}>
+                    {action.label}
+                  </Link>
                 ) : (
-                  <span>Sin sitio web configurado</span>
+                  <button
+                    type="button"
+                    className={dash.cta}
+                    onClick={() => setCompanyOpen(true)}
+                  >
+                    {action.label}
+                  </button>
                 )}
-                {overview.phone ? <span>{overview.phone}</span> : null}
               </div>
             </div>
-
-            <div className={dash.heroAside}>
-              <p className={dash.panelMark}>
-                {overview.onboardingCompleted
-                  ? 'Completado'
-                  : 'Siguiente paso'}
-              </p>
-              <h2 className={dash.asideTitle}>{action.title}</h2>
-              <p className={dash.muted}>{action.body}</p>
-              {action.href ? (
-                <Link href={action.href} className={dash.cta}>
-                  {action.label}
-                </Link>
-              ) : (
-                <a href="#company-profile" className={dash.cta}>
-                  {action.label}
-                </a>
-              )}
-            </div>
+            <div className={dash.heroBrand}>{brandBlock}</div>
           </section>
 
           {!overview.onboardingCompleted ? (
@@ -366,195 +438,57 @@ export default function DashboardPage() {
           </section>
 
           <div className={dash.grid}>
-            <section
-              id="company-profile"
-              className={dash.card}
-              aria-labelledby="profile-title"
-            >
-              <div className={dash.cardHead}>
-                <div className={dash.profileHead}>
-                  <div>
-                    <h2 id="profile-title">Datos de la empresa</h2>
-                    <p className={dash.muted}>
-                      {editingCompany
-                        ? 'Modificá los datos y guardá los cambios.'
-                        : 'Datos guardados de tu empresa.'}
-                    </p>
-                  </div>
-                  {editingCompany ? null : (
-                    <button
-                      type="button"
-                      className={dash.editButton}
-                      aria-label="Editar datos de la empresa"
-                      onClick={() => setEditingCompany(true)}
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path
-                          d="M4 16.5V20h3.5L18.8 8.7l-3.5-3.5L4 16.5z"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M13.8 6.7l3.5 3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </button>
-                  )}
+            <section className={dash.card} aria-labelledby="agents-title">
+              <div className={dash.cardHeadRow}>
+                <div>
+                  <h2 id="agents-title">Perfil agente</h2>
+                  <p className={dash.muted}>
+                    Documentos, chats y estado del widget.
+                  </p>
                 </div>
               </div>
 
-              {editingCompany ? (
-              <form className={dash.form} onSubmit={saveCompany}>
-                <label className={dash.field} htmlFor="company-name">
-                  <span>Nombre comercial</span>
-                  <input
-                    id="company-name"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    required
-                  />
-                </label>
-                <label className={dash.field} htmlFor="company-email">
-                  <span>Email de contacto</span>
-                  <input
-                    id="company-email"
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    required
-                  />
-                </label>
-                <label className={dash.field} htmlFor="company-industry">
-                  <span>Rubro / industria</span>
-                  <input
-                    id="company-industry"
-                    value={industry}
-                    onChange={(e) => setIndustry(e.target.value)}
-                    placeholder="Ej. Software, Retail"
-                    required
-                  />
-                </label>
-                <label className={dash.field} htmlFor="company-website">
-                  <span>Sitio web</span>
-                  <input
-                    id="company-website"
-                    type="url"
-                    value={website}
-                    onChange={(e) => setWebsite(e.target.value)}
-                    placeholder="https://"
-                    required
-                  />
-                </label>
-                <label className={dash.field} htmlFor="company-phone">
-                  <span>Teléfono</span>
-                  <input
-                    id="company-phone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+54 ..."
-                  />
-                </label>
-                <label className={dash.field} htmlFor="company-language">
-                  <span>Idioma principal</span>
-                  <select
-                    id="company-language"
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
+              <div className={dash.list}>
+                {overview.agents.flatMap((agent) => [
+                  <Link
+                    key={agent.id}
+                    href={`/agents/${agent.id}`}
+                    className={dash.listItem}
                   >
-                    <option value="es">Español</option>
-                    <option value="en">English</option>
-                    <option value="pt">Português</option>
-                  </select>
-                </label>
-                <label className={dash.field} htmlFor="company-timezone">
-                  <span>Zona horaria</span>
-                  <select
-                    id="company-timezone"
-                    value={timezone}
-                    onChange={(e) => setTimezone(e.target.value)}
-                  >
-                    <option value="America/Argentina/Buenos_Aires">
-                      Argentina (Buenos Aires)
-                    </option>
-                    <option value="America/Santiago">Chile (Santiago)</option>
-                    <option value="America/Bogota">Colombia (Bogotá)</option>
-                    <option value="America/Mexico_City">México</option>
-                    <option value="America/Lima">Perú (Lima)</option>
-                    <option value="Europe/Madrid">España (Madrid)</option>
-                  </select>
-                </label>
-                <label className={dash.field} htmlFor="company-hours">
-                  <span>Horario de atención</span>
-                  <input
-                    id="company-hours"
-                    value={businessHours}
-                    onChange={(e) => setBusinessHours(e.target.value)}
-                    placeholder="Lun a Vie, 9 a 18 hs"
-                  />
-                </label>
-                <div className={dash.formActions}>
-                  <button
-                    type="submit"
-                    className={dash.cta}
-                    disabled={savingCompany}
-                  >
-                    {savingCompany ? 'Guardando…' : 'Guardar perfil'}
-                  </button>
-                  <button
-                    type="button"
-                    className={dash.cancelButton}
-                    disabled={savingCompany}
-                    onClick={() => {
-                      if (overview) applyOverview(overview);
-                      setEditingCompany(false);
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-              ) : (
-                <dl className={dash.profileList}>
-                  {[
-                    ['Nombre comercial', companyName],
-                    ['Email de contacto', contactEmail],
-                    ['Rubro / industria', industry],
-                    ['Sitio web', website],
-                    ['Teléfono', phone],
-                    [
-                      'Idioma principal',
-                      language === 'en'
-                        ? 'English'
-                        : language === 'pt'
-                          ? 'Português'
-                          : 'Español',
-                    ],
-                    [
-                      'Zona horaria',
-                      {
-                        'America/Argentina/Buenos_Aires': 'Argentina (Buenos Aires)',
-                        'America/Santiago': 'Chile (Santiago)',
-                        'America/Bogota': 'Colombia (Bogotá)',
-                        'America/Mexico_City': 'México',
-                        'America/Lima': 'Perú (Lima)',
-                        'Europe/Madrid': 'España (Madrid)',
-                      }[timezone] ?? timezone,
-                    ],
-                    ['Horario de atención', businessHours],
-                  ].map(([label, value]) => (
-                    <div key={label} className={dash.profileItem}>
-                      <dt>{label}</dt>
-                      <dd>{value?.trim() ? value : 'Sin dato'}</dd>
+                    <div>
+                      <strong>{agent.name}</strong>
+                      <p className={dash.muted}>
+                        {agent.documentsCount} docs · {agent.conversationsCount}{' '}
+                        chats · widget{' '}
+                        {agent.widget
+                          ? statusLabel(agent.widget.status)
+                          : 'sin publicar'}
+                      </p>
                     </div>
-                  ))}
-                </dl>
-              )}
+                    <span className={dash.badge}>{statusLabel(agent.status)}</span>
+                  </Link>,
+                  <Link
+                    key={`${agent.id}-cargas`}
+                    href={`/agents/${agent.id}`}
+                    className={dash.listItem}
+                  >
+                    <div>
+                      <strong>Cargas</strong>
+                      <p className={dash.muted}>
+                        {agent.documentsCount} docs · {agent.conversationsCount}{' '}
+                        chats · widget{' '}
+                        {agent.widget
+                          ? statusLabel(agent.widget.status)
+                          : 'sin publicar'}
+                      </p>
+                    </div>
+                    <span className={dash.badge}>{statusLabel(agent.status)}</span>
+                  </Link>,
+                ])}
+                {overview.agents.length === 0 ? (
+                  <p className={dash.muted}>No hay agentes todavía.</p>
+                ) : null}
+              </div>
             </section>
 
             <section className={dash.card} aria-labelledby="deploy-title">
@@ -701,6 +635,25 @@ export default function DashboardPage() {
             </section>
           </div>
 
+          {accountOpen ? (
+            <div
+              className={dash.modalBackdrop}
+              onClick={() => setAccountOpen(false)}
+            >
+              <div
+                className={dash.modal}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="account-title"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className={dash.modalClose}
+                  onClick={() => setAccountOpen(false)}
+                >
+                  Cerrar
+                </button>
           <section className={dash.card} aria-labelledby="account-title">
             <div className={dash.cardHead}>
               <h2 id="account-title">Cuenta</h2>
@@ -745,42 +698,222 @@ export default function DashboardPage() {
               </div>
             </div>
           </section>
+              </div>
+            </div>
+          ) : null}
 
-          <section className={dash.card} aria-labelledby="agents-title">
-            <div className={dash.cardHeadRow}>
-              <div>
-                <h2 id="agents-title">Agentes</h2>
-                <p className={dash.muted}>
-                  Configuración, conocimiento y publicación de cada asistente.
-                </p>
+          {companyOpen ? (
+            <div
+              className={dash.modalBackdrop}
+              onClick={() => setCompanyOpen(false)}
+            >
+              <div
+                className={dash.modal}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="profile-title"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className={dash.modalClose}
+                  onClick={() => setCompanyOpen(false)}
+                >
+                  Cerrar
+                </button>
+          <section
+            id="company-profile"
+            className={dash.card}
+            aria-labelledby="profile-title"
+          >
+            <div className={dash.cardHead}>
+              <div className={dash.profileHead}>
+                <div>
+                  <h2 id="profile-title">Datos de la empresa</h2>
+                  <p className={dash.muted}>
+                    {editingCompany
+                      ? 'Modificá los datos y guardá los cambios.'
+                      : 'Datos guardados de tu empresa.'}
+                  </p>
+                </div>
+                {editingCompany ? null : (
+                  <button
+                    type="button"
+                    className={dash.editButton}
+                    aria-label="Editar datos de la empresa"
+                    onClick={() => setEditingCompany(true)}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        d="M4 16.5V20h3.5L18.8 8.7l-3.5-3.5L4 16.5z"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M13.8 6.7l3.5 3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className={dash.list}>
-              {overview.agents.map((agent) => (
-                <Link
-                  key={agent.id}
-                  href={`/agents/${agent.id}`}
-                  className={dash.listItem}
+            {editingCompany ? (
+            <form className={dash.form} onSubmit={saveCompany}>
+              <label className={dash.field} htmlFor="company-name">
+                <span>Nombre comercial</span>
+                <input
+                  id="company-name"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  required
+                />
+              </label>
+              <label className={dash.field} htmlFor="company-email">
+                <span>Email de contacto</span>
+                <input
+                  id="company-email"
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  required
+                />
+              </label>
+              <label className={dash.field} htmlFor="company-industry">
+                <span>Rubro / industria</span>
+                <input
+                  id="company-industry"
+                  value={industry}
+                  onChange={(e) => setIndustry(e.target.value)}
+                  placeholder="Ej. Software, Retail"
+                  required
+                />
+              </label>
+              <label className={dash.field} htmlFor="company-website">
+                <span>Sitio web</span>
+                <input
+                  id="company-website"
+                  type="url"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://"
+                  required
+                />
+              </label>
+              <label className={dash.field} htmlFor="company-phone">
+                <span>Teléfono</span>
+                <input
+                  id="company-phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+54 ..."
+                />
+              </label>
+              <label className={dash.field} htmlFor="company-language">
+                <span>Idioma principal</span>
+                <select
+                  id="company-language"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
                 >
-                  <div>
-                    <strong>{agent.name}</strong>
-                    <p className={dash.muted}>
-                      {agent.documentsCount} docs · {agent.conversationsCount}{' '}
-                      chats · widget{' '}
-                      {agent.widget
-                        ? statusLabel(agent.widget.status)
-                        : 'sin publicar'}
-                    </p>
+                  <option value="es">Español</option>
+                  <option value="en">English</option>
+                  <option value="pt">Português</option>
+                </select>
+              </label>
+              <label className={dash.field} htmlFor="company-timezone">
+                <span>Zona horaria</span>
+                <select
+                  id="company-timezone"
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                >
+                  <option value="America/Argentina/Buenos_Aires">
+                    Argentina (Buenos Aires)
+                  </option>
+                  <option value="America/Santiago">Chile (Santiago)</option>
+                  <option value="America/Bogota">Colombia (Bogotá)</option>
+                  <option value="America/Mexico_City">México</option>
+                  <option value="America/Lima">Perú (Lima)</option>
+                  <option value="Europe/Madrid">España (Madrid)</option>
+                </select>
+              </label>
+              <label className={dash.field} htmlFor="company-hours">
+                <span>Horario de atención</span>
+                <input
+                  id="company-hours"
+                  value={businessHours}
+                  onChange={(e) => setBusinessHours(e.target.value)}
+                  placeholder="Lun a Vie, 9 a 18 hs"
+                />
+              </label>
+              <div className={dash.formActions}>
+                <button
+                  type="submit"
+                  className={dash.cta}
+                  disabled={savingCompany}
+                >
+                  {savingCompany ? 'Guardando…' : 'Guardar perfil'}
+                </button>
+                <button
+                  type="button"
+                  className={dash.cancelButton}
+                  disabled={savingCompany}
+                  onClick={() => {
+                    if (overview) applyOverview(overview);
+                    setEditingCompany(false);
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+            ) : (
+              <dl className={dash.profileList}>
+                {[
+                  ['Nombre comercial', companyName],
+                  ['Email de contacto', contactEmail],
+                  ['Rubro / industria', industry],
+                  ['Sitio web', website],
+                  ['Teléfono', phone],
+                  [
+                    'Idioma principal',
+                    language === 'en'
+                      ? 'English'
+                      : language === 'pt'
+                        ? 'Português'
+                        : 'Español',
+                  ],
+                  [
+                    'Zona horaria',
+                    {
+                      'America/Argentina/Buenos_Aires': 'Argentina (Buenos Aires)',
+                      'America/Santiago': 'Chile (Santiago)',
+                      'America/Bogota': 'Colombia (Bogotá)',
+                      'America/Mexico_City': 'México',
+                      'America/Lima': 'Perú (Lima)',
+                      'Europe/Madrid': 'España (Madrid)',
+                    }[timezone] ?? timezone,
+                  ],
+                  ['Horario de atención', businessHours],
+                ].map(([label, value]) => (
+                  <div key={label} className={dash.profileItem}>
+                    <dt>{label}</dt>
+                    <dd>{value?.trim() ? value : 'Sin dato'}</dd>
                   </div>
-                  <span className={dash.badge}>{statusLabel(agent.status)}</span>
-                </Link>
-              ))}
-              {overview.agents.length === 0 ? (
-                <p className={dash.muted}>No hay agentes todavía.</p>
-              ) : null}
-            </div>
+                ))}
+              </dl>
+            )}
           </section>
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
     </main>
