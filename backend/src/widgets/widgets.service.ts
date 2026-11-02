@@ -21,6 +21,7 @@ const widgetSelect = {
   welcomeMessage: true,
   position: true,
   size: true,
+  movable: true,
   logoUrl: true,
   allowedDomains: true,
   status: true,
@@ -70,6 +71,7 @@ export class WidgetsService {
         welcomeMessage: data.welcomeMessage,
         position: data.position ?? 'bottom-right',
         size: data.size ?? 'lg',
+        movable: data.movable ?? true,
         logoUrl: data.logoUrl,
         allowedDomains: allowedDomains ?? [],
         status: data.status ?? WidgetStatus.INACTIVE,
@@ -127,6 +129,7 @@ export class WidgetsService {
         welcomeMessage: true,
         position: true,
         size: true,
+        movable: true,
         logoUrl: true,
         agent: {
           select: {

@@ -19,6 +19,7 @@
   var state = {
     open: false,
     busy: false,
+    movable: false,
     conversationId: null,
     config: null,
   };
@@ -59,6 +60,32 @@
         box-shadow: 0 12px 38px rgba(43, 165, 222, 0.5);
       }
 
+      #atlasia-root[data-anchor="bottom-left"] #atlasia-fab {
+        left: 20px;
+        right: auto;
+      }
+
+      #atlasia-root[data-anchor="bottom-left"] #atlasia-panel {
+        left: 20px;
+        right: auto;
+      }
+
+      #atlasia-root[data-anchor="bottom-center"] #atlasia-fab {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+      }
+
+      #atlasia-root[data-anchor="bottom-center"] #atlasia-fab:hover {
+        transform: translateX(-50%) translateY(-3px);
+      }
+
+      #atlasia-root[data-anchor="bottom-center"] #atlasia-panel {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+      }
+
       #atlasia-fab svg { width: 30px; height: 30px; }
 
       #atlasia-panel {
@@ -73,11 +100,10 @@
         overflow: hidden;
         color: #f5f1ff;
         background:
-          radial-gradient(ellipse at 100% 0%,rgba(112,45,202,.17),transparent 42%),
-          #0b0912;
+          radial-gradient(ellipse at 100% 0%,rgba(112,45,202,.17),transparent 42%),rgba(11, 9, 18, 0.68);
         border: 1px solid rgba(164,111,255,.38);
-        border-radius: 22px;
-        box-shadow: 0 22px 65px rgba(0,0,0,.55),0 0 32px rgba(122,52,255,.12);
+        border-radius: 10px;
+        box-shadow: 0 22px 65px rgba(0, 0, 0, 0.37),0 0 32px rgba(122,52,255,.12);
       }
 
       #atlasia-panel.open { display: flex; }
@@ -86,9 +112,12 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 16px 30px 16px 16px;
-        background: rgba(255,255,255,.025);
-        border-bottom: 1px solid rgba(255,255,255,.08);
+        padding: 16px;
+        background: rgba(255, 255, 255, 0);
+        /*border-bottom: 1px solid rgba(255,255,255,.08);*/
+      }
+
+      #atlasia-panel[data-movable="true"] #atlasia-head {
         cursor: grab;
         touch-action: none;
         user-select: none;
@@ -99,12 +128,12 @@
       }
 
       #atlasia-resize {
-        position: absolute;
-        top: 7px;
-        right: 7px;
-        z-index: 2;
-        width: 18px;
-        height: 18px;
+        position: relative;
+        align-self: flex-end;
+        flex-shrink: 0;
+        width: 22px;
+        height: 22px;
+        margin: 0 18px 2px 0;
         padding: 0;
         border: 0;
         background: transparent;
@@ -115,8 +144,8 @@
       #atlasia-resize::before {
         content: "";
         position: absolute;
-        top: 2px;
-        right: 2px;
+        top: 4px;
+        right: 4px;
         width: 9px;
         height: 9px;
         border-top: 2px solid rgba(255,255,255,.5);
@@ -383,7 +412,7 @@
           bottom: 80px;
           width: calc(100vw - 24px);
           height: min(620px,calc(100dvh - 96px));
-          border-radius: 19px;
+          border-radius: 10px;
         }
         #atlasia-intro { padding: 14px 15px 9px; }
         #atlasia-messages { padding: 10px 13px; }
@@ -519,9 +548,9 @@
     "aria-label": "Cambiar tamaño del chat",
   });
 
-  panel.appendChild(resizeHandle);
   panel.appendChild(head);
   panel.appendChild(messages);
+  panel.appendChild(resizeHandle);
   panel.appendChild(form);
   panel.appendChild(footer);
 
@@ -637,7 +666,7 @@
   }
 
   function applySavedPosition() {
-    if (drag || !state.open || !panel.offsetWidth) return;
+    if (!state.movable || drag || !state.open || !panel.offsetWidth) return;
     var saved = readSavedPosition();
     if (!saved) return;
     placePanel(saved.left, saved.top, false);
@@ -660,7 +689,70 @@
     placePanel(rect.left, rect.top, true);
   }
 
+  function applyAnchor() {
+    var config = state.config;
+    var position =
+      config &&
+      (config.position === "bottom-left" || config.position === "bottom-center")
+        ? config.position
+        : "bottom-right";
+    var previous = null;
+
+    try {
+      previous = localStorage.getItem("atlasia-panel-anchor:" + widgetId);
+    } catch (error) {}
+
+    if (previous && previous !== position) {
+      try {
+        localStorage.removeItem(positionKey);
+      } catch (error) {}
+      panel.removeAttribute("data-dragged");
+    }
+
+    try {
+      localStorage.setItem("atlasia-panel-anchor:" + widgetId, position);
+    } catch (error) {}
+
+    root.setAttribute("data-anchor", position);
+    if (panel.getAttribute("data-dragged") === "true") return;
+
+    panel.style.left = "";
+    panel.style.top = "";
+    panel.style.right = "";
+    panel.style.bottom = "";
+    panel.style.transform = "";
+    fab.style.left = "";
+    fab.style.right = "";
+    fab.style.transform = "";
+  }
+
+  function setMovable(enabled) {
+    state.movable = !!enabled;
+    if (state.movable) {
+      panel.setAttribute("data-movable", "true");
+      applySavedPosition();
+      return;
+    }
+
+    panel.removeAttribute("data-movable");
+    panel.removeAttribute("data-dragging");
+    drag = null;
+    if (panel.getAttribute("data-dragged") !== "true") {
+      applyAnchor();
+      return;
+    }
+
+    panel.removeAttribute("data-dragged");
+    panel.style.left = "";
+    panel.style.top = "";
+    panel.style.right = "";
+    panel.style.bottom = "";
+    panel.style.transform = "";
+    applyAnchor();
+  }
+
   head.addEventListener("pointerdown", function (event) {
+    if (!state.movable) return;
     if (event.button !== 0) return;
     if (event.target.closest && event.target.closest("button")) return;
 
@@ -836,22 +928,13 @@
 
       addBubble("assistant", welcome);
 
-      if (
-        config.position === "bottom-left" &&
-        panel.getAttribute("data-dragged") !== "true"
-      ) {
-        fab.style.left = "20px";
-        fab.style.right = "auto";
-        panel.style.left = "20px";
-        panel.style.right = "auto";
-      }
-
       applyWidgetSize(
         readSavedSize() ||
           (config.size === "sm" || config.size === "md" ? config.size : "lg"),
         false
       );
-      applySavedPosition();
+      setMovable(config.movable !== false);
+      applyAnchor();
     })
     .catch(function (error) {
       console.error("[AtlasIA] No se pudo cargar la configuración:", error);

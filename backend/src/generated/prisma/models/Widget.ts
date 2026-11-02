@@ -32,6 +32,7 @@ export type WidgetMinAggregateOutputType = {
   welcomeMessage: string | null
   position: string | null
   size: string | null
+  movable: boolean | null
   logoUrl: string | null
   status: $Enums.WidgetStatus | null
   createdAt: Date | null
@@ -46,6 +47,7 @@ export type WidgetMaxAggregateOutputType = {
   welcomeMessage: string | null
   position: string | null
   size: string | null
+  movable: boolean | null
   logoUrl: string | null
   status: $Enums.WidgetStatus | null
   createdAt: Date | null
@@ -60,6 +62,7 @@ export type WidgetCountAggregateOutputType = {
   welcomeMessage: number
   position: number
   size: number
+  movable: number
   logoUrl: number
   allowedDomains: number
   status: number
@@ -77,6 +80,7 @@ export type WidgetMinAggregateInputType = {
   welcomeMessage?: true
   position?: true
   size?: true
+  movable?: true
   logoUrl?: true
   status?: true
   createdAt?: true
@@ -91,6 +95,7 @@ export type WidgetMaxAggregateInputType = {
   welcomeMessage?: true
   position?: true
   size?: true
+  movable?: true
   logoUrl?: true
   status?: true
   createdAt?: true
@@ -105,6 +110,7 @@ export type WidgetCountAggregateInputType = {
   welcomeMessage?: true
   position?: true
   size?: true
+  movable?: true
   logoUrl?: true
   allowedDomains?: true
   status?: true
@@ -193,6 +199,7 @@ export type WidgetGroupByOutputType = {
   welcomeMessage: string | null
   position: string | null
   size: string | null
+  movable: boolean
   logoUrl: string | null
   allowedDomains: string[]
   status: $Enums.WidgetStatus
@@ -229,6 +236,7 @@ export type WidgetWhereInput = {
   welcomeMessage?: Prisma.StringNullableFilter<"Widget"> | string | null
   position?: Prisma.StringNullableFilter<"Widget"> | string | null
   size?: Prisma.StringNullableFilter<"Widget"> | string | null
+  movable?: Prisma.BoolFilter<"Widget"> | boolean
   logoUrl?: Prisma.StringNullableFilter<"Widget"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Widget">
   status?: Prisma.EnumWidgetStatusFilter<"Widget"> | $Enums.WidgetStatus
@@ -245,6 +253,7 @@ export type WidgetOrderByWithRelationInput = {
   welcomeMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   position?: Prisma.SortOrderInput | Prisma.SortOrder
   size?: Prisma.SortOrderInput | Prisma.SortOrder
+  movable?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -264,6 +273,7 @@ export type WidgetWhereUniqueInput = Prisma.AtLeast<{
   welcomeMessage?: Prisma.StringNullableFilter<"Widget"> | string | null
   position?: Prisma.StringNullableFilter<"Widget"> | string | null
   size?: Prisma.StringNullableFilter<"Widget"> | string | null
+  movable?: Prisma.BoolFilter<"Widget"> | boolean
   logoUrl?: Prisma.StringNullableFilter<"Widget"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Widget">
   status?: Prisma.EnumWidgetStatusFilter<"Widget"> | $Enums.WidgetStatus
@@ -280,6 +290,7 @@ export type WidgetOrderByWithAggregationInput = {
   welcomeMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   position?: Prisma.SortOrderInput | Prisma.SortOrder
   size?: Prisma.SortOrderInput | Prisma.SortOrder
+  movable?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -301,6 +312,7 @@ export type WidgetScalarWhereWithAggregatesInput = {
   welcomeMessage?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
   position?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
   size?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
+  movable?: Prisma.BoolWithAggregatesFilter<"Widget"> | boolean
   logoUrl?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Widget">
   status?: Prisma.EnumWidgetStatusWithAggregatesFilter<"Widget"> | $Enums.WidgetStatus
@@ -315,6 +327,7 @@ export type WidgetCreateInput = {
   welcomeMessage?: string | null
   position?: string | null
   size?: string | null
+  movable?: boolean
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
   status?: $Enums.WidgetStatus
@@ -331,6 +344,7 @@ export type WidgetUncheckedCreateInput = {
   welcomeMessage?: string | null
   position?: string | null
   size?: string | null
+  movable?: boolean
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
   status?: $Enums.WidgetStatus
@@ -345,6 +359,7 @@ export type WidgetUpdateInput = {
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  movable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -361,6 +376,7 @@ export type WidgetUncheckedUpdateInput = {
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  movable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -376,6 +392,7 @@ export type WidgetCreateManyInput = {
   welcomeMessage?: string | null
   position?: string | null
   size?: string | null
+  movable?: boolean
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
   status?: $Enums.WidgetStatus
@@ -390,6 +407,7 @@ export type WidgetUpdateManyMutationInput = {
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  movable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -405,6 +423,7 @@ export type WidgetUncheckedUpdateManyInput = {
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  movable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -433,6 +452,7 @@ export type WidgetCountOrderByAggregateInput = {
   welcomeMessage?: Prisma.SortOrder
   position?: Prisma.SortOrder
   size?: Prisma.SortOrder
+  movable?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -448,6 +468,7 @@ export type WidgetMaxOrderByAggregateInput = {
   welcomeMessage?: Prisma.SortOrder
   position?: Prisma.SortOrder
   size?: Prisma.SortOrder
+  movable?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -462,6 +483,7 @@ export type WidgetMinOrderByAggregateInput = {
   welcomeMessage?: Prisma.SortOrder
   position?: Prisma.SortOrder
   size?: Prisma.SortOrder
+  movable?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -520,6 +542,7 @@ export type WidgetCreateWithoutAgentInput = {
   welcomeMessage?: string | null
   position?: string | null
   size?: string | null
+  movable?: boolean
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
   status?: $Enums.WidgetStatus
@@ -534,6 +557,7 @@ export type WidgetUncheckedCreateWithoutAgentInput = {
   welcomeMessage?: string | null
   position?: string | null
   size?: string | null
+  movable?: boolean
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
   status?: $Enums.WidgetStatus
@@ -564,6 +588,7 @@ export type WidgetUpdateWithoutAgentInput = {
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  movable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -578,6 +603,7 @@ export type WidgetUncheckedUpdateWithoutAgentInput = {
   welcomeMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   size?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  movable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
@@ -595,6 +621,7 @@ export type WidgetSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   welcomeMessage?: boolean
   position?: boolean
   size?: boolean
+  movable?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
   status?: boolean
@@ -611,6 +638,7 @@ export type WidgetSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   welcomeMessage?: boolean
   position?: boolean
   size?: boolean
+  movable?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
   status?: boolean
@@ -627,6 +655,7 @@ export type WidgetSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   welcomeMessage?: boolean
   position?: boolean
   size?: boolean
+  movable?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
   status?: boolean
@@ -643,6 +672,7 @@ export type WidgetSelectScalar = {
   welcomeMessage?: boolean
   position?: boolean
   size?: boolean
+  movable?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
   status?: boolean
@@ -650,7 +680,7 @@ export type WidgetSelectScalar = {
   updatedAt?: boolean
 }
 
-export type WidgetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "agentId" | "name" | "primaryColor" | "welcomeMessage" | "position" | "size" | "logoUrl" | "allowedDomains" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["widget"]>
+export type WidgetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "agentId" | "name" | "primaryColor" | "welcomeMessage" | "position" | "size" | "movable" | "logoUrl" | "allowedDomains" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["widget"]>
 export type WidgetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   agent?: boolean | Prisma.AgentDefaultArgs<ExtArgs>
 }
@@ -674,6 +704,7 @@ export type $WidgetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     welcomeMessage: string | null
     position: string | null
     size: string | null
+    movable: boolean
     logoUrl: string | null
     allowedDomains: string[]
     status: $Enums.WidgetStatus
@@ -1110,6 +1141,7 @@ export interface WidgetFieldRefs {
   readonly welcomeMessage: Prisma.FieldRef<"Widget", 'String'>
   readonly position: Prisma.FieldRef<"Widget", 'String'>
   readonly size: Prisma.FieldRef<"Widget", 'String'>
+  readonly movable: Prisma.FieldRef<"Widget", 'Boolean'>
   readonly logoUrl: Prisma.FieldRef<"Widget", 'String'>
   readonly allowedDomains: Prisma.FieldRef<"Widget", 'String[]'>
   readonly status: Prisma.FieldRef<"Widget", 'WidgetStatus'>

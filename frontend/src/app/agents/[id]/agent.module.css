@@ -1,7 +1,79 @@
+
+
 /* =========================================================
    ATLASIA — AGENT DETAIL
    Premium SaaS / Midnight / Electric Violet
 ========================================================= */
+
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.controlRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.controlLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  min-width: 64px;
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.segment {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.segment:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.segmentActive,
+.segmentActive:hover:not(:disabled) {
+  background: #7c2fe0;
+  color: #fff;
+}
+
+.segment:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.controlStatus {
+  min-height: 1em;
+  margin: 0;
+  font-size: 0.75rem;
+  color: #4ade80;
+  text-align: right;
+}
+
+
 
 .page {
   --ink: #171321;

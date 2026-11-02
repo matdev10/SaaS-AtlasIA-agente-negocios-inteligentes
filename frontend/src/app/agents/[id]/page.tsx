@@ -94,6 +94,14 @@ const SIZE_OPTIONS = [
 
 type WidgetSize = (typeof SIZE_OPTIONS)[number]['id'];
 
+const POSITION_OPTIONS = [
+  { id: 'bottom-left', label: 'Izquierda' },
+  { id: 'bottom-center', label: 'Centro' },
+  { id: 'bottom-right', label: 'Derecha' },
+] as const;
+
+type WidgetPosition = (typeof POSITION_OPTIONS)[number]['id'];
+
 const TEXT_FILE_EXTENSIONS = ['.txt', '.md', '.csv', '.faq', '.text'];
 
 function documentStatusLabel(status: string) {
@@ -180,6 +188,14 @@ export default function AgentDetailPage() {
   const [savingSize, setSavingSize] = useState(false);
   const [sizeMenuOpen, setSizeMenuOpen] = useState(false);
   const [sizeSaved, setSizeSaved] = useState(false);
+  const [widgetMovable, setWidgetMovable] = useState(true);
+  const [savingMovable, setSavingMovable] = useState(false);
+  const [movableSaved, setMovableSaved] = useState(false);
+  const [widgetPosition, setWidgetPosition] =
+    useState<WidgetPosition>('bottom-right');
+  const [savingPosition, setSavingPosition] = useState(false);
+  const [positionMenuOpen, setPositionMenuOpen] = useState(false);
+  const [positionSaved, setPositionSaved] = useState(false);
 
   async function load() {
     const [agentData, docs] = await Promise.all([
@@ -204,12 +220,21 @@ export default function AgentDetailPage() {
     setSelectedWelcomeId(matchedWelcome);
     setDocuments(docs);
     try {
-      const widget = await api<{ id: string; size?: string | null }>(
-        `/agents/${agentId}/widget`,
-      );
+      const widget = await api<{
+        id: string;
+        size?: string | null;
+        movable?: boolean;
+        position?: string | null;
+      }>(`/agents/${agentId}/widget`);
       setPreviewWidgetId(widget.id);
       setWidgetSize(
         widget.size === 'sm' || widget.size === 'md' ? widget.size : 'lg',
+      );
+      setWidgetMovable(widget.movable !== false);
+      setWidgetPosition(
+        widget.position === 'bottom-left' || widget.position === 'bottom-center'
+          ? widget.position
+          : 'bottom-right',
       );
     } catch {
       setPreviewWidgetId(null);
@@ -482,6 +507,66 @@ export default function AgentDetailPage() {
       setError(err instanceof Error ? err.message : 'No se pudo cambiar el tamaño');
     } finally {
       setSavingSize(false);
+    }
+  }
+
+  async function chooseWidgetPosition(position: WidgetPosition) {
+    if (savingPosition) return;
+    setPositionSaved(false);
+    if (position === widgetPosition) {
+      setPositionMenuOpen(false);
+      setPositionSaved(true);
+      return;
+    }
+    setError('');
+    setSavingPosition(true);
+    try {
+      const widget = await api<{ id: string; position?: string | null }>(
+        `/agents/${agentId}/widget`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ position }),
+        },
+      );
+      const saved =
+        widget.position === 'bottom-left' || widget.position === 'bottom-center'
+          ? widget.position
+          : position;
+      setWidgetPosition(saved);
+      setPositionMenuOpen(false);
+      setPositionSaved(true);
+      setPreviewTick(Date.now());
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'No se pudo cambiar la posición',
+      );
+    } finally {
+      setSavingPosition(false);
+    }
+  }
+
+  async function chooseWidgetMovable(movable: boolean) {
+    if (savingMovable || movable === widgetMovable) return;
+    setMovableSaved(false);
+    setError('');
+    setSavingMovable(true);
+    try {
+      const widget = await api<{ id: string; movable?: boolean }>(
+        `/agents/${agentId}/widget`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ movable }),
+        },
+      );
+      setWidgetMovable(widget.movable !== false);
+      setMovableSaved(true);
+      setPreviewTick(Date.now());
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'No se pudo cambiar el movimiento',
+      );
+    } finally {
+      setSavingMovable(false);
     }
   }
 
@@ -1012,57 +1097,90 @@ export default function AgentDetailPage() {
               </button>
               <a
                 className={styles.previewLink}
-                href={`${API_URL}/demo-nuvcore.html`}
+                href={
+                  previewWidgetId
+                    ? `${API_URL}/demo-nuvcore.html?widget=${encodeURIComponent(previewWidgetId)}&api=${encodeURIComponent(API_URL)}`
+                    : `${API_URL}/demo-nuvcore.html`
+                }
                 target="_blank"
                 rel="noreferrer"
               >
                 Abrir en grande
               </a>
-            </div>
-            <div className={styles.sizePicker}>
-              <button
-                type="button"
-                className={`${styles.sizeToggle} ${
-                  sizeMenuOpen ? styles.sizeToggleOpen : ''
-                }`}
-                aria-expanded={sizeMenuOpen}
-                aria-controls="agent-size-menu"
-                disabled={!previewWidgetId}
-                onClick={() => setSizeMenuOpen((open) => !open)}
-              >
-                Tamaño
-                <span className={styles.sizeCurrent}>
-                  {SIZE_OPTIONS.find((option) => option.id === widgetSize)?.label}
-                </span>
-              </button>
-              {sizeSaved ? <span className={styles.sizeSaved}>Guardado</span> : null}
-              {sizeMenuOpen ? (
-                <div
-                  id="agent-size-menu"
-                  className={styles.sizeMenu}
-                  role="group"
-                  aria-label="Medidas del agente"
-                >
-                  {SIZE_OPTIONS.map((option) => (
-                    <button
-                      key={option.id}
-                      type="button"
-                      className={`${styles.sizeOption} ${
-                        widgetSize === option.id ? styles.sizeOptionActive : ''
-                      }`}
-                      disabled={!previewWidgetId || savingSize}
-                      aria-pressed={widgetSize === option.id}
-                      onClick={() => {
-                        setSizeMenuOpen(false);
-                        void chooseWidgetSize(option.id);
-                      }}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+              </div>
+              <div className={styles.controls}>
+  <div className={styles.controlRow}>
+    <span className={styles.controlLabel}>Tamaño</span>
+    <div className={styles.segmented} role="group" aria-label="Tamaño del chat">
+      {SIZE_OPTIONS.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          className={`${styles.segment} ${
+            widgetSize === option.id ? styles.segmentActive : ''
+          }`}
+          disabled={!previewWidgetId || savingSize}
+          aria-pressed={widgetSize === option.id}
+          onClick={() => void chooseWidgetSize(option.id)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div className={styles.controlRow}>
+    <span className={styles.controlLabel}>Posición</span>
+    <div className={styles.segmented} role="group" aria-label="Posición del chat">
+      {POSITION_OPTIONS.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          className={`${styles.segment} ${
+            widgetPosition === option.id ? styles.segmentActive : ''
+          }`}
+          disabled={!previewWidgetId || savingPosition}
+          aria-pressed={widgetPosition === option.id}
+          onClick={() => void chooseWidgetPosition(option.id)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div className={styles.controlRow}>
+    <span className={styles.controlLabel}>Ventana</span>
+    <div className={styles.segmented} role="group" aria-label="Movimiento de la ventana">
+      <button
+        type="button"
+        className={`${styles.segment} ${widgetMovable ? styles.segmentActive : ''}`}
+        disabled={!previewWidgetId || savingMovable}
+        aria-pressed={widgetMovable}
+        onClick={() => void chooseWidgetMovable(true)}
+      >
+        Movible
+      </button>
+      <button
+        type="button"
+        className={`${styles.segment} ${!widgetMovable ? styles.segmentActive : ''}`}
+        disabled={!previewWidgetId || savingMovable}
+        aria-pressed={!widgetMovable}
+        onClick={() => void chooseWidgetMovable(false)}
+      >
+        Fija
+      </button>
+    </div>
+  </div>
+
+  <p className={styles.controlStatus} role="status" aria-live="polite">
+    {savingSize || savingPosition || savingMovable
+      ? 'Guardando…'
+      : sizeSaved || positionSaved || movableSaved
+        ? 'Cambios guardados'
+        : ''}
+  </p>
+</div>
           </div>
           {previewWidgetId ? (
             <iframe

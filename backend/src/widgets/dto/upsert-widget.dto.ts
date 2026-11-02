@@ -1,6 +1,7 @@
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsEnum,
   IsIn,
   IsOptional,
@@ -28,13 +29,16 @@ export class UpsertWidgetDto {
   welcomeMessage?: string;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(30)
-  position?: string;
+  @IsIn(['bottom-left', 'bottom-center', 'bottom-right'])
+  position?: 'bottom-left' | 'bottom-center' | 'bottom-right';
 
   @IsOptional()
   @IsIn(['sm', 'md', 'lg'])
   size?: 'sm' | 'md' | 'lg';
+
+  @IsOptional()
+  @IsBoolean()
+  movable?: boolean;
 
   @IsOptional()
   @IsUrl()
