@@ -196,6 +196,10 @@ export default function AgentDetailPage() {
   const [savingPosition, setSavingPosition] = useState(false);
   const [positionMenuOpen, setPositionMenuOpen] = useState(false);
   const [positionSaved, setPositionSaved] = useState(false);
+  const [buttonPosition, setButtonPosition] =
+    useState<WidgetPosition>('bottom-right');
+  const [savingButton, setSavingButton] = useState(false);
+  const [buttonSaved, setButtonSaved] = useState(false);
 
   async function load() {
     const [agentData, docs] = await Promise.all([
@@ -225,6 +229,7 @@ export default function AgentDetailPage() {
         size?: string | null;
         movable?: boolean;
         position?: string | null;
+        buttonPosition?: string | null;
       }>(`/agents/${agentId}/widget`);
       setPreviewWidgetId(widget.id);
       setWidgetSize(
@@ -235,6 +240,15 @@ export default function AgentDetailPage() {
         widget.position === 'bottom-left' || widget.position === 'bottom-center'
           ? widget.position
           : 'bottom-right',
+      );
+      setButtonPosition(
+        widget.buttonPosition === 'bottom-left' ||
+          widget.buttonPosition === 'bottom-center' ||
+          widget.buttonPosition === 'bottom-right'
+          ? widget.buttonPosition
+          : widget.position === 'bottom-left' || widget.position === 'bottom-center'
+            ? widget.position
+            : 'bottom-right',
       );
     } catch {
       setPreviewWidgetId(null);
@@ -567,6 +581,37 @@ export default function AgentDetailPage() {
       );
     } finally {
       setSavingMovable(false);
+    }
+  }
+
+  async function chooseWidgetButton(position: WidgetPosition) {
+    if (savingButton || position === buttonPosition) return;
+    setButtonSaved(false);
+    setError('');
+    setSavingButton(true);
+    try {
+      const widget = await api<{ id: string; buttonPosition?: string | null }>(
+        `/agents/${agentId}/widget`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ buttonPosition: position }),
+        },
+      );
+      const saved =
+        widget.buttonPosition === 'bottom-left' ||
+        widget.buttonPosition === 'bottom-center' ||
+        widget.buttonPosition === 'bottom-right'
+          ? widget.buttonPosition
+          : position;
+      setButtonPosition(saved);
+      setButtonSaved(true);
+      setPreviewTick(Date.now());
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'No se pudo cambiar el botón',
+      );
+    } finally {
+      setSavingButton(false);
     }
   }
 
@@ -1150,6 +1195,26 @@ export default function AgentDetailPage() {
   </div>
 
   <div className={styles.controlRow}>
+    <span className={styles.controlLabel}>Botón</span>
+    <div className={styles.segmented} role="group" aria-label="Posición del botón del agente">
+      {POSITION_OPTIONS.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          className={`${styles.segment} ${
+            buttonPosition === option.id ? styles.segmentActive : ''
+          }`}
+          disabled={!previewWidgetId || savingButton}
+          aria-pressed={buttonPosition === option.id}
+          onClick={() => void chooseWidgetButton(option.id)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div className={styles.controlRow}>
     <span className={styles.controlLabel}>Ventana</span>
     <div className={styles.segmented} role="group" aria-label="Movimiento de la ventana">
       <button
@@ -1174,9 +1239,9 @@ export default function AgentDetailPage() {
   </div>
 
   <p className={styles.controlStatus} role="status" aria-live="polite">
-    {savingSize || savingPosition || savingMovable
+    {savingSize || savingPosition || savingButton || savingMovable
       ? 'Guardando…'
-      : sizeSaved || positionSaved || movableSaved
+      : sizeSaved || positionSaved || buttonSaved || movableSaved
         ? 'Cambios guardados'
         : ''}
   </p>

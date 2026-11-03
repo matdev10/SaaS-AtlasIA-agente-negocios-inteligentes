@@ -33,6 +33,10 @@ export class UpsertWidgetDto {
   position?: 'bottom-left' | 'bottom-center' | 'bottom-right';
 
   @IsOptional()
+  @IsIn(['bottom-left', 'bottom-center', 'bottom-right'])
+  buttonPosition?: 'bottom-left' | 'bottom-center' | 'bottom-right';
+
+  @IsOptional()
   @IsIn(['sm', 'md', 'lg'])
   size?: 'sm' | 'md' | 'lg';
 

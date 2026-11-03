@@ -39,9 +39,9 @@
 
       #atlasia-fab {
         position: fixed;
-        z-index: 2147483000;
-        right: 92px;
-        bottom: 20px;
+        z-index: 2147483001;
+        right: 20px;
+        bottom: 96px;
         width: 50px;
         height: 50px;
         display: grid;
@@ -60,30 +60,52 @@
         box-shadow: 0 12px 38px rgba(43, 165, 222, 0.5);
       }
 
-      #atlasia-root[data-anchor="bottom-left"] #atlasia-fab {
+      #atlasia-root[data-button="bottom-left"] #atlasia-fab {
         left: 20px;
         right: auto;
+        bottom: 20px;
+        transform: none;
       }
 
-      #atlasia-root[data-anchor="bottom-left"] #atlasia-panel {
-        left: 20px;
+      #atlasia-root[data-button="bottom-left"] #atlasia-panel {
+        left: 82px;
         right: auto;
+        bottom: 20px;
+        max-width: calc(100vw - 104px);
+        transform: none;
       }
 
-      #atlasia-root[data-anchor="bottom-center"] #atlasia-fab {
+      #atlasia-root[data-button="bottom-center"] #atlasia-fab {
         left: 50%;
         right: auto;
+        bottom: 20px;
         transform: translateX(-50%);
       }
 
-      #atlasia-root[data-anchor="bottom-center"] #atlasia-fab:hover {
+      #atlasia-root[data-button="bottom-center"] #atlasia-fab:hover {
         transform: translateX(-50%) translateY(-3px);
       }
 
-      #atlasia-root[data-anchor="bottom-center"] #atlasia-panel {
+      #atlasia-root[data-button="bottom-center"] #atlasia-panel {
         left: 50%;
         right: auto;
+        bottom: 82px;
         transform: translateX(-50%);
+      }
+
+      #atlasia-root[data-button="bottom-right"] #atlasia-fab {
+        left: auto;
+        right: 20px;
+        bottom: 96px;
+        transform: none;
+      }
+
+      #atlasia-root[data-button="bottom-right"] #atlasia-panel {
+        left: auto;
+        right: 82px;
+        bottom: 96px;
+        max-width: calc(100vw - 104px);
+        transform: none;
       }
 
       #atlasia-fab svg { width: 30px; height: 30px; }
@@ -91,8 +113,8 @@
       #atlasia-panel {
         position: fixed;
         z-index: 2147483000;
-        right: 20px;
-        bottom: 92px;
+        right: 82px;
+        bottom: 96px;
         width: min(400px, calc(100vw - 24px));
         height: min(650px, calc(100dvh - 115px));
         display: none;
@@ -421,9 +443,28 @@
       }
 
       #atlasia-panel[data-size="sm"] {
-        width: min(300px, calc(100vw - 24px));
-        height: min(420px, calc(100dvh - 96px));
-      }
+  width: min(280px, calc(100vw - 24px));
+  height: min(380px, calc(100dvh - 96px));
+}
+
+/* Compactar por dentro (las fuentes quedan legibles, no se escalan) */
+#atlasia-panel[data-size="sm"] #atlasia-head { padding: 12px; gap: 10px; }
+#atlasia-panel[data-size="sm"] #atlasia-mark { width: 36px; height: 36px; }
+#atlasia-panel[data-size="sm"] #atlasia-mark svg { width: 20px; height: 20px; }
+#atlasia-panel[data-size="sm"] #atlasia-head strong { font-size: 14px; }
+#atlasia-panel[data-size="sm"] #atlasia-head span { margin-top: 3px; }
+
+#atlasia-panel[data-size="sm"] #atlasia-messages { padding: 8px 12px; gap: 10px; }
+#atlasia-panel[data-size="sm"] .atlasia-avatar { width: 24px; height: 24px; }
+#atlasia-panel[data-size="sm"] .atlasia-bubble { padding: 9px 11px; max-width: 88%; }
+
+#atlasia-panel[data-size="sm"] #atlasia-resize { margin: 0 12px 0 0; }
+#atlasia-panel[data-size="sm"] #atlasia-form { margin: 0 12px; padding: 4px 5px 4px 11px; }
+#atlasia-panel[data-size="sm"] #atlasia-input { padding: 8px 0; }
+#atlasia-panel[data-size="sm"] #atlasia-send { padding: 8px 11px; }
+
+#atlasia-panel[data-size="sm"] #atlasia-footer { padding: 8px 14px 10px; }
+#atlasia-panel[data-size="sm"] #atlasia-footer span:last-child { display: none; }
 
       #atlasia-panel[data-size="md"] {
         width: min(340px, calc(100vw - 24px));
@@ -592,18 +633,26 @@
       applyLiveWelcome(data.welcome);
     });
   }
+  function isTouchDevice() {
+    return (
+      window.matchMedia("(pointer: coarse)").matches ||
+      "ontouchstart" in window
+    );
+  }
 
   function setOpen(open) {
     state.open = open;
     panel.classList.toggle("open", open);
-    fab.style.display = open ? "none" : "";
-    fab.setAttribute("aria-label", "Abrir chat AtlasIA");
+    fab.setAttribute(
+      "aria-label",
+      open ? "Cerrar chat AtlasIA" : "Abrir chat AtlasIA"
+    );
     fab.innerHTML = atlasMark;
 
     if (open) {
       applySavedSize();
       applySavedPosition();
-      input.focus();
+      if (!isTouchDevice()) input.focus();
     }
   }
 
@@ -662,7 +711,7 @@
 
     try {
       localStorage.setItem(positionKey, JSON.stringify(next));
-    } catch (error) {}
+    } catch (error) { }
   }
 
   function applySavedPosition() {
@@ -689,31 +738,36 @@
     placePanel(rect.left, rect.top, true);
   }
 
+  function readSide(value) {
+    return value === "bottom-left" ||
+      value === "bottom-center" ||
+      value === "bottom-right"
+      ? value
+      : null;
+  }
+
   function applyAnchor() {
-    var config = state.config;
-    var position =
-      config &&
-      (config.position === "bottom-left" || config.position === "bottom-center")
-        ? config.position
-        : "bottom-right";
+    var config = state.config || {};
+    var button =
+      readSide(config.buttonPosition) || readSide(config.position) || "bottom-right";
     var previous = null;
 
     try {
       previous = localStorage.getItem("atlasia-panel-anchor:" + widgetId);
-    } catch (error) {}
+    } catch (error) { }
 
-    if (previous && previous !== position) {
+    if (previous && previous !== button) {
       try {
         localStorage.removeItem(positionKey);
-      } catch (error) {}
+      } catch (error) { }
       panel.removeAttribute("data-dragged");
     }
 
     try {
-      localStorage.setItem("atlasia-panel-anchor:" + widgetId, position);
-    } catch (error) {}
+      localStorage.setItem("atlasia-panel-anchor:" + widgetId, button);
+    } catch (error) { }
 
-    root.setAttribute("data-anchor", position);
+    root.setAttribute("data-button", button);
     if (panel.getAttribute("data-dragged") === "true") return;
 
     panel.style.left = "";
@@ -723,6 +777,7 @@
     panel.style.transform = "";
     fab.style.left = "";
     fab.style.right = "";
+    fab.style.bottom = "";
     fab.style.transform = "";
   }
 
@@ -765,7 +820,7 @@
     panel.setAttribute("data-dragging", "true");
     try {
       head.setPointerCapture(event.pointerId);
-    } catch (error) {}
+    } catch (error) { }
     event.preventDefault();
   });
 
@@ -792,7 +847,7 @@
       var raw = localStorage.getItem(sizeKey);
       if (raw === "sm" || raw === "md" || raw === "lg") return raw;
       if (raw) localStorage.removeItem(sizeKey);
-    } catch (error) {}
+    } catch (error) { }
     return null;
   }
 
@@ -811,7 +866,7 @@
 
     try {
       localStorage.setItem(sizeKey, size);
-    } catch (error) {}
+    } catch (error) { }
   }
 
   function applySavedSize() {
@@ -897,7 +952,7 @@
         send.disabled = false;
         input.disabled = false;
 
-        if (state.open) input.focus();
+        if (state.open && !isTouchDevice()) input.focus();
       });
   }
 
@@ -930,7 +985,7 @@
 
       applyWidgetSize(
         readSavedSize() ||
-          (config.size === "sm" || config.size === "md" ? config.size : "lg"),
+        (config.size === "sm" || config.size === "md" ? config.size : "lg"),
         false
       );
       setMovable(config.movable !== false);
