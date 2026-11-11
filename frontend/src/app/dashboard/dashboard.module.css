@@ -889,6 +889,7 @@
   align-items: center;
   gap: 1rem;
 
+  width: 100%;
   min-width: 0;
   padding: 1.05rem 1.15rem;
 
@@ -896,7 +897,10 @@
   border-radius: 16px;
   background: #fff;
   color: inherit;
+  font: inherit;
+  text-align: left;
   text-decoration: none;
+  cursor: pointer;
 
   transition: border-color 160ms ease, box-shadow 160ms ease,
     transform 160ms ease;

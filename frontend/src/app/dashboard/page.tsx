@@ -2,7 +2,7 @@
 
 import { DM_Sans, Syne } from 'next/font/google';
 import Link from 'next/link';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { Fragment, FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -36,6 +36,25 @@ const STEP_LABELS: Record<OnboardingStep, string> = {
   COMPLETED: 'Listo',
 };
 
+type ChatSummary = {
+  id: string;
+  agentId: string;
+  channel: string;
+  status: string;
+  visitorName: string | null;
+  startedAt: string;
+  createdAt: string;
+  preview: string;
+  messageCount: number;
+};
+
+type ChatMessage = {
+  id: string;
+  role: string;
+  content: string;
+  createdAt: string;
+};
+
 function statusLabel(status: string) {
   const map: Record<string, string> = {
     TRIAL: 'Prueba',
@@ -48,6 +67,35 @@ function statusLabel(status: string) {
     PROCESSED: 'Procesado',
   };
   return map[status] ?? status;
+}
+
+function channelLabel(channel: string) {
+  if (channel === 'WIDGET') return 'Widget';
+  if (channel === 'TEST_CHAT') return 'Prueba';
+  return channel;
+}
+
+function relativeTime(iso: string) {
+  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (minutes < 1) return 'Hace un momento';
+  if (minutes < 60) return `Hace ${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `Hace ${hours} h`;
+  const days = Math.round(hours / 24);
+  return `Hace ${days} d`;
+}
+
+function chatTitle(chat: ChatSummary) {
+  const preview = chat.preview.trim();
+  if (preview) return preview.length > 72 ? `${preview.slice(0, 72)}…` : preview;
+  if (chat.visitorName?.trim()) return chat.visitorName.trim();
+  return `Chat de ${channelLabel(chat.channel).toLowerCase()}`;
+}
+
+function messageRole(role: string) {
+  if (role === 'VISITOR') return 'Visitante';
+  if (role === 'ASSISTANT') return 'Agente';
+  return role;
 }
 
 function nextAction(
@@ -119,6 +167,12 @@ export default function DashboardPage() {
   const [editingPages, setEditingPages] = useState(false);
   const [savingDomains, setSavingDomains] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [chatHistoryOpen, setChatHistoryOpen] = useState(false);
+  const [chats, setChats] = useState<ChatSummary[]>([]);
+  const [chatsLoading, setChatsLoading] = useState(false);
+  const [openChatId, setOpenChatId] = useState<string | null>(null);
+  const [openMessages, setOpenMessages] = useState<ChatMessage[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
 
   const [companyName, setCompanyName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -172,6 +226,87 @@ export default function DashboardPage() {
   function logout() {
     clearSession();
     router.push('/login');
+  }
+
+  async function loadChats() {
+    if (!overview) return;
+    setChatsLoading(true);
+    try {
+      const lists = await Promise.all(
+        overview.agents.map(async (agent) => {
+          const rows = await api<
+            Array<{
+              id: string;
+              channel: string;
+              status: string;
+              visitorName: string | null;
+              startedAt: string;
+              createdAt: string;
+              _count: { messages: number };
+              messages: Array<{ content: string }>;
+            }>
+          >(`/agents/${agent.id}/conversations`);
+          return rows.map((row) => ({
+            id: row.id,
+            agentId: agent.id,
+            channel: row.channel,
+            status: row.status,
+            visitorName: row.visitorName,
+            startedAt: row.startedAt,
+            createdAt: row.createdAt,
+            preview: row.messages[0]?.content ?? '',
+            messageCount: row._count.messages,
+          }));
+        }),
+      );
+      setChats(
+        lists
+          .flat()
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          ),
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'No se pudo cargar el historial',
+      );
+    } finally {
+      setChatsLoading(false);
+    }
+  }
+
+  async function toggleChatHistory() {
+    const next = !chatHistoryOpen;
+    setChatHistoryOpen(next);
+    setOpenChatId(null);
+    setOpenMessages([]);
+    if (next) await loadChats();
+  }
+
+  async function toggleChat(chat: ChatSummary) {
+    if (openChatId === chat.id) {
+      setOpenChatId(null);
+      setOpenMessages([]);
+      return;
+    }
+
+    setOpenChatId(chat.id);
+    setOpenMessages([]);
+    setMessagesLoading(true);
+    try {
+      const detail = await api<{ messages: ChatMessage[] }>(
+        `/agents/${chat.agentId}/conversations/${chat.id}`,
+      );
+      setOpenMessages(detail.messages);
+    } catch (err) {
+      setOpenChatId(null);
+      setError(
+        err instanceof Error ? err.message : 'No se pudo abrir la conversación',
+      );
+    } finally {
+      setMessagesLoading(false);
+    }
   }
 
   async function saveCompany(event: FormEvent) {
@@ -449,44 +584,77 @@ export default function DashboardPage() {
               </div>
 
               <div className={dash.list}>
-                {overview.agents.flatMap((agent) => [
-                  <Link
-                    key={agent.id}
-                    href={`/agents/${agent.id}`}
-                    className={dash.listItem}
-                  >
-                    <div>
-                      <strong>{agent.name}</strong>
-                      <p className={dash.muted}>
-                        {agent.documentsCount} docs · {agent.conversationsCount}{' '}
-                        chats · widget{' '}
-                        {agent.widget
-                          ? statusLabel(agent.widget.status)
-                          : 'sin publicar'}
-                      </p>
-                    </div>
-                    <span className={dash.badge}>{statusLabel(agent.status)}</span>
-                  </Link>,
-                  <Link
-                    key={`${agent.id}-cargas`}
-                    href={`/agents/${agent.id}`}
-                    className={dash.listItem}
-                  >
-                    <div>
-                      <strong>Cargas</strong>
-                      <p className={dash.muted}>
-                        {agent.documentsCount} docs · {agent.conversationsCount}{' '}
-                        chats · widget{' '}
-                        {agent.widget
-                          ? statusLabel(agent.widget.status)
-                          : 'sin publicar'}
-                      </p>
-                    </div>
-                    <span className={dash.badge}>{statusLabel(agent.status)}</span>
-                  </Link>,
-                ])}
-                {overview.agents.length === 0 ? (
-                  <p className={dash.muted}>No hay agentes todavía.</p>
+                <button
+                  type="button"
+                  className={dash.listItem}
+                  aria-expanded={chatHistoryOpen}
+                  onClick={() => void toggleChatHistory()}
+                >
+                  <div>
+                    <strong>Historial chat</strong>
+                    <p className={dash.muted}>
+                      {chatHistoryOpen
+                        ? 'Ocultar conversaciones'
+                        : 'Ver conversaciones recientes'}
+                    </p>
+                  </div>
+                </button>
+                {chatHistoryOpen ? (
+                  chatsLoading ? (
+                    <p className={dash.muted}>Cargando conversaciones…</p>
+                  ) : chats.length === 0 ? (
+                    <p className={dash.muted}>Todavía no hay conversaciones.</p>
+                  ) : (
+                    chats.map((chat) => (
+                      <Fragment key={chat.id}>
+                        <button
+                          type="button"
+                          className={dash.listItem}
+                          aria-expanded={openChatId === chat.id}
+                          onClick={() => void toggleChat(chat)}
+                        >
+                          <div>
+                            <strong>{chatTitle(chat)}</strong>
+                            <p className={dash.muted}>
+                              {relativeTime(chat.startedAt)} · {chat.messageCount}{' '}
+                              {chat.messageCount === 1 ? 'mensaje' : 'mensajes'}{' '}
+                              · {channelLabel(chat.channel)}
+                            </p>
+                          </div>
+                          <span
+                            className={`${dash.badge} ${
+                              chat.status === 'CLOSED' ? dash.badgeOk : ''
+                            }`}
+                          >
+                            {chat.status === 'CLOSED' ? 'Cerrado' : 'Abierto'}
+                          </span>
+                        </button>
+                        {openChatId === chat.id ? (
+                          messagesLoading ? (
+                            <p className={dash.muted}>Cargando mensajes…</p>
+                          ) : openMessages.length === 0 ? (
+                            <p className={dash.muted}>
+                              Esta conversación no tiene mensajes.
+                            </p>
+                          ) : (
+                            <div className={dash.list}>
+                              {openMessages.map((message) => (
+                                <div
+                                  key={message.id}
+                                  className={`${dash.listItem} ${dash.accountRow}`}
+                                >
+                                  <div>
+                                    <strong>{messageRole(message.role)}</strong>
+                                    <p className={dash.muted}>{message.content}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        ) : null}
+                      </Fragment>
+                    ))
+                  )
                 ) : null}
               </div>
             </section>

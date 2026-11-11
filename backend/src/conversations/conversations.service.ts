@@ -256,14 +256,47 @@ export class ConversationsService {
         id: true,
         channel: true,
         status: true,
+        visitorName: true,
         startedAt: true,
-        endedAt: true,
         createdAt: true,
         _count: {
           select: { messages: true },
         },
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          take: 1,
+          select: { content: true },
+        },
       },
     });
+  }
+
+  async findOne(agentId: string, conversationId: string, companyId: string) {
+    const conversation = await this.prisma.conversation.findFirst({
+      where: { id: conversationId, agentId, companyId },
+      select: {
+        id: true,
+        channel: true,
+        status: true,
+        visitorName: true,
+        startedAt: true,
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          select: {
+            id: true,
+            role: true,
+            content: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversación no encontrada');
+    }
+
+    return conversation;
   }
 
   private async retrieveRelevantChunks(

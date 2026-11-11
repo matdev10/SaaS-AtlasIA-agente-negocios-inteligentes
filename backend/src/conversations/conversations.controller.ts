@@ -40,4 +40,17 @@ export class ConversationsController {
   ) {
     return this.conversationsService.listByAgent(agentId, user.companyId);
   }
+
+  @Get('agents/:agentId/conversations/:conversationId')
+  findOne(
+    @Param('agentId') agentId: string,
+    @Param('conversationId') conversationId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.conversationsService.findOne(
+      agentId,
+      conversationId,
+      user.companyId,
+    );
+  }
 }

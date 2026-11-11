@@ -1,149 +1,216 @@
-'use client';
+"use client";
 
-import { Bebas_Neue, DM_Sans } from 'next/font/google';
-import Link from 'next/link';
-import { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
-
-import { api, AuthResponse, setSession } from '@/lib/api';
-import styles from './login.module.css';
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Bebas_Neue } from "next/font/google";
+import { API_URL, setSession, type AuthResponse } from "@/lib/api";
+import styles from "./login.module.css";
 
 const bebas = Bebas_Neue({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-login-display',
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
 });
 
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-login-body',
-});
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
 
-const globe = (
-  <svg viewBox="0 0 160 160" fill="none" aria-hidden="true">
-    <g stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <circle cx="80" cy="80" r="70" />
-      <ellipse cx="80" cy="80" rx="48" ry="70" />
-      <ellipse cx="80" cy="80" rx="26" ry="70" />
-      <line x1="80" y1="10" x2="80" y2="150" />
-      <ellipse cx="80" cy="80" rx="70" ry="16" />
-      <ellipse cx="80" cy="80" rx="70" ry="40" />
-    </g>
-  </svg>
-);
+interface LoginErrorResponse {
+  message?: string | string[];
+}
+
+const INITIAL_CREDENTIALS: LoginCredentials = { email: "", password: "" };
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault();
-    setLoading(true);
-    setError('');
+  const [credentials, setCredentials] =
+    useState<LoginCredentials>(INITIAL_CREDENTIALS);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
+    setCredentials((prev) => ({
+      ...prev,
+      [name as keyof LoginCredentials]: value,
+    }));
+    if (error) setError(null);
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+
+    if (!credentials.email.trim() || !credentials.password) {
+      setError("Completa correo y contraseña para continuar.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const auth = await api<AuthResponse>(
-        '/auth/login',
-        {
-          method: 'POST',
-          body: JSON.stringify({ email, password }),
-        },
-        false,
-      );
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: credentials.email.trim(),
+          password: credentials.password,
+        }),
+      });
+
+      if (!res.ok) {
+        const data: LoginErrorResponse = await res.json().catch(() => ({}));
+        const message = Array.isArray(data.message)
+          ? data.message.join(", ")
+          : data.message;
+        throw new Error(message ?? "Credenciales inválidas.");
+      }
+
+      const auth = (await res.json()) as AuthResponse;
       setSession(auth);
-      router.push('/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo iniciar sesión');
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "Ocurrió un error inesperado.",
+      );
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <main className={`${styles.page} ${bebas.variable} ${dmSans.variable}`}>
-      <div className={styles.stage}>
-        <section className={styles.brand} aria-label="Sophia IA">
-          <div className={styles.logo}>
-            <p className={styles.sophia}>Sophia</p>
-            <div className={styles.globe}>{globe}</div>
-            <p className={styles.ia}>IA</p>
-          </div>
-          <div className={styles.brandFoot}>
-            <p className={styles.brandEyebrow}>Tu empresa, un agente</p>
-            <p className={styles.brandHeadline}>
-              Accede al hub donde tu conocimiento responde solo
-            </p>
-          </div>
-        </section>
+    <main className={styles.page}>
+      <div className={styles.glowTop} aria-hidden="true" />
+      <div className={styles.glowBottom} aria-hidden="true" />
 
-        <section className={styles.formSide}>
-          <header className={styles.formHeader}>
-            <p className={styles.mark}>Sophia IA</p>
-            <h1 className={styles.title}>Iniciar sesión</h1>
-            <p className={styles.support}>
-              Entrá al panel para configurar agentes, documentos y tu widget.
-            </p>
-          </header>
+      <section className={styles.card} aria-labelledby="login-title">
+        {/* ---------- Marca ---------- */}
+        <header className={styles.brand}>
+          <div className={styles.logo} aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <ellipse cx="12" cy="12" rx="4" ry="9" />
+              <path d="M3 12h18" />
+            </svg>
+          </div>
 
-          <form className={styles.form} onSubmit={onSubmit} noValidate>
-            <label className={styles.field}>
-              <span>Tu correo</span>
+          <p className={`${styles.brandName} ${bebas.className}`}>
+            Sophia <span className={styles.brandAccent}>IA</span>
+          </p>
+          <p className={`${styles.slogan} ${bebas.className}`}>
+            Tu empresa, impulsada por inteligencia artificial
+          </p>
+        </header>
+
+        <div className={styles.divider} aria-hidden="true" />
+
+        {/* ---------- Título del formulario ---------- */}
+        <div className={styles.formHeader}>
+          <h1 id="login-title" className={styles.title}>
+            Iniciar sesión
+          </h1>
+          <p className={styles.subtitle}>
+            Ingresa tus credenciales para continuar
+          </p>
+        </div>
+
+        {/* ---------- Formulario ---------- */}
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.field}>
+            <label htmlFor="email" className={styles.label}>
+              Correo
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="tu@empresa.com"
+              className={styles.input}
+              value={credentials.email}
+              onChange={handleChange}
+              disabled={isLoading}
+              aria-invalid={Boolean(error)}
+              required
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label htmlFor="password" className={styles.label}>
+              Contraseña
+            </label>
+            <div className={styles.passwordWrapper}>
               <input
-                type="email"
-                placeholder="tu@empresa.com"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                placeholder="••••••••"
+                className={`${styles.input} ${styles.inputPassword}`}
+                value={credentials.password}
+                onChange={handleChange}
+                disabled={isLoading}
+                aria-invalid={Boolean(error)}
                 required
               />
-            </label>
+              <button
+                type="button"
+                className={styles.toggle}
+                onClick={() => setShowPassword((prev) => !prev)}
+                disabled={isLoading}
+                aria-label={
+                  showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                }
+                aria-pressed={showPassword}
+              >
+                {showPassword ? "Ocultar" : "Ver"}
+              </button>
+            </div>
+          </div>
 
-            <label className={styles.field}>
-              <span>Tu contraseña</span>
-              <div className={styles.passwordRow}>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Mínimo 8 caracteres"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  minLength={8}
-                  required
-                />
-                <button
-                  type="button"
-                  className={styles.eyeButton}
-                  onClick={() => setShowPassword((value) => !value)}
-                  aria-label={
-                    showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
-                  }
-                >
-                  {showPassword ? 'Ocultar' : 'Ver'}
-                </button>
-              </div>
-            </label>
+          {error && (
+            <p className={styles.error} role="alert">
+              <span className={styles.errorIcon} aria-hidden="true">
+                !
+              </span>
+              <span>{error}</span>
+            </p>
+          )}
 
-            {error ? (
-              <p className={styles.error} role="alert">
-                {error}
-              </p>
-            ) : null}
+          <button
+            type="submit"
+            className={styles.submit}
+            disabled={isLoading}
+            aria-busy={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <span className={styles.spinner} aria-hidden="true" />
+                Verificando…
+              </>
+            ) : (
+              "Iniciar sesión"
+            )}
+          </button>
+        </form>
 
-            <button className={styles.submit} type="submit" disabled={loading}>
-              {loading ? 'Entrando…' : 'Entrar'}
-            </button>
-          </form>
-
-          <p className={styles.footer}>
-            ¿No tienes cuenta? <Link href="/register">Crear cuenta</Link>
-          </p>
-        </section>
-      </div>
+        <footer className={styles.footer}>
+          <span>¿No tienes una cuenta?</span>
+          <Link href="/register" className={styles.link}>
+            Crear cuenta
+          </Link>
+        </footer>
+      </section>
     </main>
   );
 }
