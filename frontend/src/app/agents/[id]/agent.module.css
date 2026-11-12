@@ -31,6 +31,9 @@
 
 .segmented {
   display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 100%;
   padding: 3px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);

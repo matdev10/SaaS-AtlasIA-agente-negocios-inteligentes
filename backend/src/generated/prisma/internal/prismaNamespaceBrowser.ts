@@ -230,6 +230,8 @@ export const WidgetScalarFieldEnum = {
   size: 'size',
   movable: 'movable',
   buttonPosition: 'buttonPosition',
+  logo: 'logo',
+  presence: 'presence',
   logoUrl: 'logoUrl',
   allowedDomains: 'allowedDomains',
   status: 'status',

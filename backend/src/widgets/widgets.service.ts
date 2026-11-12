@@ -23,6 +23,8 @@ const widgetSelect = {
   size: true,
   movable: true,
   buttonPosition: true,
+  logo: true,
+  presence: true,
   logoUrl: true,
   allowedDomains: true,
   status: true,
@@ -74,6 +76,8 @@ export class WidgetsService {
         size: data.size ?? 'lg',
         movable: data.movable ?? true,
         buttonPosition: data.buttonPosition ?? data.position ?? 'bottom-right',
+        logo: data.logo ?? 'atlas',
+        presence: data.presence ?? 'online',
         logoUrl: data.logoUrl,
         allowedDomains: allowedDomains ?? [],
         status: data.status ?? WidgetStatus.INACTIVE,
@@ -133,6 +137,8 @@ export class WidgetsService {
         size: true,
         movable: true,
         buttonPosition: true,
+        logo: true,
+        presence: true,
         logoUrl: true,
         agent: {
           select: {

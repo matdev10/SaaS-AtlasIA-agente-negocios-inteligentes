@@ -307,6 +307,8 @@ model Widget {
   size            String?      @default("lg")
   movable         Boolean      @default(true)
   buttonPosition  String?      @default("bottom-right")
+  logo            String?      @default("atlas")
+  presence        String?      @default("online")
   logoUrl         String?
   allowedDomains  String[]     @default([])
   status          WidgetStatus @default(INACTIVE)

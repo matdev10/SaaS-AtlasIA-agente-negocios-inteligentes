@@ -504,12 +504,39 @@
     return node;
   }
 
-  var atlasMark =
-    '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true">' +
-    '<circle cx="16" cy="16" r="10.5" stroke="currentColor" stroke-width="1.8"/>' +
-    '<ellipse cx="16" cy="16" rx="4.8" ry="10.5" stroke="currentColor" stroke-width="1.8"/>' +
-    '<path d="M6.2 16h19.6M8.4 11.4h15.2M8.4 20.6h15.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
-    "</svg>";
+  var MARKS = {
+    atlas:
+      '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true">' +
+      '<circle cx="16" cy="16" r="10.5" stroke="currentColor" stroke-width="1.8"/>' +
+      '<ellipse cx="16" cy="16" rx="4.8" ry="10.5" stroke="currentColor" stroke-width="1.8"/>' +
+      '<path d="M6.2 16h19.6M8.4 11.4h15.2M8.4 20.6h15.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+      "</svg>",
+    headset:
+      '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true">' +
+      '<path d="M6 18v-2a10 10 0 0 1 20 0v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<rect x="4" y="17" width="5" height="8" rx="2" stroke="currentColor" stroke-width="1.8"/>' +
+      '<rect x="23" y="17" width="5" height="8" rx="2" stroke="currentColor" stroke-width="1.8"/>' +
+      '<path d="M25.5 25a4 4 0 0 1-4 4H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+      "</svg>",
+    chat:
+      '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true">' +
+      '<path d="M8 21.5 5.5 26l5-1.8A10 10 0 1 0 8 21.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' +
+      '<path d="M12 15h8M12 19h4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+      "</svg>",
+  };
+
+  var PRESENCE = {
+    online: { label: "En línea", color: "#22c55e" },
+    busy: { label: "Ocupado", color: "#ef4444" },
+    away: { label: "Ausente", color: "#f59e0b" },
+    offline: { label: "Desconectado", color: "#6b7280" },
+  };
+
+  var currentLogo = "atlas";
+
+  function currentMark() {
+    return MARKS[currentLogo] || MARKS.atlas;
+  }
 
   var minimizeMark =
     '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true">' +
@@ -525,7 +552,7 @@
     type: "button",
     "aria-label": "Abrir chat AtlasIA",
   });
-  fab.innerHTML = atlasMark;
+  fab.innerHTML = currentMark();
 
   var panel = el("section", {
     id: "atlasia-panel",
@@ -536,7 +563,7 @@
 
   var head = el("header", { id: "atlasia-head" });
   var mark = el("div", { id: "atlasia-mark" });
-  mark.innerHTML = atlasMark;
+  mark.innerHTML = currentMark();
   var headCopy = el("div", { id: "atlasia-head-copy" });
   var title = el("strong", { text: "" });
   var subtitle = el("span");
@@ -605,7 +632,7 @@
 
     if (role === "assistant") {
       var avatar = el("div", { className: "atlasia-avatar" });
-      avatar.innerHTML = atlasMark;
+      avatar.innerHTML = currentMark();
       row.appendChild(avatar);
     }
 
@@ -616,6 +643,29 @@
 
     messages.appendChild(row);
     messages.scrollTop = messages.scrollHeight;
+  }
+
+  function paintLogos() {
+    var svg = currentMark();
+    fab.innerHTML = svg;
+    mark.innerHTML = svg;
+    var avatars = messages.querySelectorAll(".atlasia-avatar");
+    for (var i = 0; i < avatars.length; i++) avatars[i].innerHTML = svg;
+  }
+
+  function paintPresence(key) {
+    var item = PRESENCE[key] || PRESENCE.online;
+    status.style.background = item.color;
+    status.style.boxShadow = "0 0 8px " + item.color;
+    subtitle.replaceChildren(status, document.createTextNode(item.label));
+  }
+
+  function applyBrand(logo, presence) {
+    if (logo === "headset" || logo === "atlas" || logo === "chat") {
+      currentLogo = logo;
+    }
+    paintLogos();
+    paintPresence(presence);
   }
 
   function applyLiveWelcome(text) {
@@ -629,8 +679,9 @@
   if (previewMode) {
     window.addEventListener("message", function (event) {
       var data = event.data;
-      if (!data || data.type !== "atlasia-set-welcome") return;
-      applyLiveWelcome(data.welcome);
+      if (!data) return;
+      if (data.type === "atlasia-set-welcome") applyLiveWelcome(data.welcome);
+      if (data.type === "atlasia-set-brand") applyBrand(data.logo, data.status);
     });
   }
   function isTouchDevice() {
@@ -647,7 +698,7 @@
       "aria-label",
       open ? "Cerrar chat AtlasIA" : "Abrir chat AtlasIA"
     );
-    fab.innerHTML = atlasMark;
+    fab.innerHTML = currentMark();
 
     if (open) {
       applySavedSize();
@@ -974,7 +1025,11 @@
         (config.agent && config.agent.name) ||
         "Atlas IA";
 
-      subtitle.replaceChildren(status, document.createTextNode("En línea"));
+      applyBrand(config.logo, config.presence);
+
+      if (previewMode) {
+        window.parent.postMessage({ type: "atlasia-ready" }, "*");
+      }
 
       var welcome =
         liveWelcome ||
@@ -994,6 +1049,9 @@
     .catch(function (error) {
       console.error("[AtlasIA] No se pudo cargar la configuración:", error);
       subtitle.replaceChildren(document.createTextNode("No disponible"));
+      if (previewMode) {
+        window.parent.postMessage({ type: "atlasia-ready" }, "*");
+      }
       addBubble(
         "assistant",
         "No pude cargar la configuración del asistente. Intenta recargar la página."

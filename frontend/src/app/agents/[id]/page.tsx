@@ -6,6 +6,12 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 import {
+  LOGOS,
+  STATUS,
+  type AgentLogo,
+  type AgentStatus,
+} from '@/components/AgentStatusSelector';
+import {
   Agent,
   API_URL,
   api,
@@ -200,6 +206,8 @@ export default function AgentDetailPage() {
     useState<WidgetPosition>('bottom-right');
   const [savingButton, setSavingButton] = useState(false);
   const [buttonSaved, setButtonSaved] = useState(false);
+  const [status, setStatus] = useState<AgentStatus>('online');
+  const [logo, setLogo] = useState<AgentLogo>('atlas');
 
   async function load() {
     const [agentData, docs] = await Promise.all([
@@ -230,6 +238,8 @@ export default function AgentDetailPage() {
         movable?: boolean;
         position?: string | null;
         buttonPosition?: string | null;
+        logo?: string | null;
+        presence?: string | null;
       }>(`/agents/${agentId}/widget`);
       setPreviewWidgetId(widget.id);
       setWidgetSize(
@@ -250,6 +260,17 @@ export default function AgentDetailPage() {
             ? widget.position
             : 'bottom-right',
       );
+      if (widget.logo === 'headset' || widget.logo === 'atlas' || widget.logo === 'chat') {
+        setLogo(widget.logo);
+      }
+      if (
+        widget.presence === 'online' ||
+        widget.presence === 'busy' ||
+        widget.presence === 'away' ||
+        widget.presence === 'offline'
+      ) {
+        setStatus(widget.presence);
+      }
     } catch {
       setPreviewWidgetId(null);
     } finally {
@@ -275,6 +296,30 @@ export default function AgentDetailPage() {
   useEffect(() => {
     pushPreviewWelcome();
   }, [previewWelcome]);
+
+  function pushPreviewBrand(
+    nextLogo = logo,
+    nextStatus = status,
+  ) {
+    previewFrameRef.current?.contentWindow?.postMessage(
+      { type: 'atlasia-set-brand', logo: nextLogo, status: nextStatus },
+      API_URL,
+    );
+  }
+
+  useEffect(() => {
+    pushPreviewBrand();
+  }, [logo, status, previewWidgetId, previewTick]);
+
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      if (event.origin !== API_URL) return;
+      if (event.data?.type !== 'atlasia-ready') return;
+      pushPreviewBrand();
+    }
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [logo, status]);
 
   useEffect(() => {
     const stored = getStoredUser();
@@ -325,6 +370,12 @@ export default function AgentDetailPage() {
         body: JSON.stringify({ tone, instructions, welcomeMessage }),
       });
       setAgent(updated);
+      if (previewWidgetId) {
+        await api(`/agents/${agentId}/widget`, {
+          method: 'PUT',
+          body: JSON.stringify({ logo, presence: status }),
+        });
+      }
       setInfo('Agente actualizado');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar');
@@ -1238,6 +1289,44 @@ export default function AgentDetailPage() {
     </div>
   </div>
 
+  <div className={styles.controlRow}>
+    <span className={styles.controlLabel}>Estado</span>
+    <div className={styles.segmented} role="group" aria-label="Estado del agente">
+      {(Object.keys(STATUS) as AgentStatus[]).map((option) => (
+        <button
+          key={option}
+          type="button"
+          className={`${styles.segment} ${
+            status === option ? styles.segmentActive : ''
+          }`}
+          aria-pressed={status === option}
+          onClick={() => setStatus(option)}
+        >
+          {STATUS[option].label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div className={styles.controlRow}>
+    <span className={styles.controlLabel}>Logo</span>
+    <div className={styles.segmented} role="group" aria-label="Logo del agente">
+      {(Object.keys(LOGOS) as AgentLogo[]).map((option) => (
+        <button
+          key={option}
+          type="button"
+          className={`${styles.segment} ${
+            logo === option ? styles.segmentActive : ''
+          }`}
+          aria-pressed={logo === option}
+          onClick={() => setLogo(option)}
+        >
+          {LOGOS[option].label}
+        </button>
+      ))}
+    </div>
+  </div>
+
   <p className={styles.controlStatus} role="status" aria-live="polite">
     {savingSize || savingPosition || savingButton || savingMovable
       ? 'Guardando…'
@@ -1253,7 +1342,10 @@ export default function AgentDetailPage() {
               className={styles.previewFrame}
               title="Vista previa del chat del agente"
               src={`${API_URL}/demo-nuvcore.html?widget=${encodeURIComponent(previewWidgetId)}&api=${encodeURIComponent(API_URL)}&open=1${previewTick ? `&t=${previewTick}` : ''}`}
-              onLoad={() => pushPreviewWelcome()}
+              onLoad={() => {
+                pushPreviewWelcome();
+                pushPreviewBrand();
+              }}
             />
           ) : (
             <p className={styles.cardHelp}>

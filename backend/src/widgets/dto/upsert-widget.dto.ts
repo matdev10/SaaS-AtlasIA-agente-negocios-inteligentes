@@ -41,6 +41,14 @@ export class UpsertWidgetDto {
   size?: 'sm' | 'md' | 'lg';
 
   @IsOptional()
+  @IsIn(['headset', 'atlas', 'chat'])
+  logo?: 'headset' | 'atlas' | 'chat';
+
+  @IsOptional()
+  @IsIn(['online', 'busy', 'away', 'offline'])
+  presence?: 'online' | 'busy' | 'away' | 'offline';
+
+  @IsOptional()
   @IsBoolean()
   movable?: boolean;
 
