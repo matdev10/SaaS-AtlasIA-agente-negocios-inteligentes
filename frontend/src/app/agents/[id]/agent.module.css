@@ -68,6 +68,15 @@
   cursor: not-allowed;
 }
 
+.controlActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.controlActions .btnPrimary {
+  min-width: 132px;
+}
+
 .controlStatus {
   min-height: 1em;
   margin: 0;

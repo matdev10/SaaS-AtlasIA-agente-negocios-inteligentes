@@ -208,6 +208,8 @@ export default function AgentDetailPage() {
   const [buttonSaved, setButtonSaved] = useState(false);
   const [status, setStatus] = useState<AgentStatus>('online');
   const [logo, setLogo] = useState<AgentLogo>('atlas');
+  const [savingAppearance, setSavingAppearance] = useState(false);
+  const [appearanceSaved, setAppearanceSaved] = useState(false);
 
   async function load() {
     const [agentData, docs] = await Promise.all([
@@ -381,6 +383,34 @@ export default function AgentDetailPage() {
       setError(err instanceof Error ? err.message : 'No se pudo guardar');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function saveWidgetAppearance() {
+    if (!previewWidgetId || savingAppearance) return;
+    setError('');
+    setAppearanceSaved(false);
+    setSavingAppearance(true);
+    try {
+      await api(`/agents/${agentId}/widget`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          size: widgetSize,
+          position: widgetPosition,
+          buttonPosition,
+          movable: widgetMovable,
+          logo,
+          presence: status,
+        }),
+      });
+      setAppearanceSaved(true);
+      setPreviewTick(Date.now());
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'No se pudieron guardar los ajustes',
+      );
+    } finally {
+      setSavingAppearance(false);
     }
   }
 
@@ -1300,7 +1330,10 @@ export default function AgentDetailPage() {
             status === option ? styles.segmentActive : ''
           }`}
           aria-pressed={status === option}
-          onClick={() => setStatus(option)}
+          onClick={() => {
+            setAppearanceSaved(false);
+            setStatus(option);
+          }}
         >
           {STATUS[option].label}
         </button>
@@ -1319,7 +1352,10 @@ export default function AgentDetailPage() {
             logo === option ? styles.segmentActive : ''
           }`}
           aria-pressed={logo === option}
-          onClick={() => setLogo(option)}
+          onClick={() => {
+            setAppearanceSaved(false);
+            setLogo(option);
+          }}
         >
           {LOGOS[option].label}
         </button>
@@ -1327,12 +1363,25 @@ export default function AgentDetailPage() {
     </div>
   </div>
 
+  <div className={styles.controlActions}>
+    <button
+      type="button"
+      className={styles.btnPrimary}
+      disabled={!previewWidgetId || savingAppearance}
+      onClick={() => void saveWidgetAppearance()}
+    >
+      {savingAppearance ? 'Guardando…' : 'Guardar'}
+    </button>
+  </div>
+
   <p className={styles.controlStatus} role="status" aria-live="polite">
-    {savingSize || savingPosition || savingButton || savingMovable
+    {savingAppearance || savingSize || savingPosition || savingButton || savingMovable
       ? 'Guardando…'
-      : sizeSaved || positionSaved || buttonSaved || movableSaved
-        ? 'Cambios guardados'
-        : ''}
+      : appearanceSaved
+        ? 'Ajustes guardados'
+        : sizeSaved || positionSaved || buttonSaved || movableSaved
+          ? 'Cambios guardados'
+          : ''}
   </p>
 </div>
           </div>
