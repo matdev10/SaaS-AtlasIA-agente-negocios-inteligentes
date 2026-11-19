@@ -1,4 +1,13 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+function resolveApiUrl() {
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, '');
+  if (process.env.NODE_ENV !== 'production') return 'http://localhost:3000';
+  throw new Error(
+    'NEXT_PUBLIC_API_URL is required in production. Set it to your AtlasIA API URL.',
+  );
+}
+
+export const API_URL = resolveApiUrl();
 
 export type AuthUser = {
   id: string;
