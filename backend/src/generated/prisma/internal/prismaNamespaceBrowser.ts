@@ -61,6 +61,7 @@ export const ModelName = {
   Conversation: 'Conversation',
   Message: 'Message',
   Widget: 'Widget',
+  Lead: 'Lead',
   Plan: 'Plan',
   Subscription: 'Subscription'
 } as const
@@ -234,12 +235,28 @@ export const WidgetScalarFieldEnum = {
   presence: 'presence',
   logoUrl: 'logoUrl',
   allowedDomains: 'allowedDomains',
+  requireLeadForm: 'requireLeadForm',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type WidgetScalarFieldEnum = (typeof WidgetScalarFieldEnum)[keyof typeof WidgetScalarFieldEnum]
+
+
+export const LeadScalarFieldEnum = {
+  id: 'id',
+  companyId: 'companyId',
+  agentId: 'agentId',
+  conversationId: 'conversationId',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  notes: 'notes',
+  createdAt: 'createdAt'
+} as const
+
+export type LeadScalarFieldEnum = (typeof LeadScalarFieldEnum)[keyof typeof LeadScalarFieldEnum]
 
 
 export const PlanScalarFieldEnum = {

@@ -37,6 +37,7 @@ export type WidgetMinAggregateOutputType = {
   logo: string | null
   presence: string | null
   logoUrl: string | null
+  requireLeadForm: boolean | null
   status: $Enums.WidgetStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -55,6 +56,7 @@ export type WidgetMaxAggregateOutputType = {
   logo: string | null
   presence: string | null
   logoUrl: string | null
+  requireLeadForm: boolean | null
   status: $Enums.WidgetStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -74,6 +76,7 @@ export type WidgetCountAggregateOutputType = {
   presence: number
   logoUrl: number
   allowedDomains: number
+  requireLeadForm: number
   status: number
   createdAt: number
   updatedAt: number
@@ -94,6 +97,7 @@ export type WidgetMinAggregateInputType = {
   logo?: true
   presence?: true
   logoUrl?: true
+  requireLeadForm?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -112,6 +116,7 @@ export type WidgetMaxAggregateInputType = {
   logo?: true
   presence?: true
   logoUrl?: true
+  requireLeadForm?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -131,6 +136,7 @@ export type WidgetCountAggregateInputType = {
   presence?: true
   logoUrl?: true
   allowedDomains?: true
+  requireLeadForm?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -223,6 +229,7 @@ export type WidgetGroupByOutputType = {
   presence: string | null
   logoUrl: string | null
   allowedDomains: string[]
+  requireLeadForm: boolean
   status: $Enums.WidgetStatus
   createdAt: Date
   updatedAt: Date
@@ -263,6 +270,7 @@ export type WidgetWhereInput = {
   presence?: Prisma.StringNullableFilter<"Widget"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"Widget"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Widget">
+  requireLeadForm?: Prisma.BoolFilter<"Widget"> | boolean
   status?: Prisma.EnumWidgetStatusFilter<"Widget"> | $Enums.WidgetStatus
   createdAt?: Prisma.DateTimeFilter<"Widget"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Widget"> | Date | string
@@ -283,6 +291,7 @@ export type WidgetOrderByWithRelationInput = {
   presence?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
+  requireLeadForm?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -306,6 +315,7 @@ export type WidgetWhereUniqueInput = Prisma.AtLeast<{
   presence?: Prisma.StringNullableFilter<"Widget"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"Widget"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Widget">
+  requireLeadForm?: Prisma.BoolFilter<"Widget"> | boolean
   status?: Prisma.EnumWidgetStatusFilter<"Widget"> | $Enums.WidgetStatus
   createdAt?: Prisma.DateTimeFilter<"Widget"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Widget"> | Date | string
@@ -326,6 +336,7 @@ export type WidgetOrderByWithAggregationInput = {
   presence?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
+  requireLeadForm?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -351,6 +362,7 @@ export type WidgetScalarWhereWithAggregatesInput = {
   presence?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
   logoUrl?: Prisma.StringNullableWithAggregatesFilter<"Widget"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Widget">
+  requireLeadForm?: Prisma.BoolWithAggregatesFilter<"Widget"> | boolean
   status?: Prisma.EnumWidgetStatusWithAggregatesFilter<"Widget"> | $Enums.WidgetStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Widget"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Widget"> | Date | string
@@ -369,6 +381,7 @@ export type WidgetCreateInput = {
   presence?: string | null
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
+  requireLeadForm?: boolean
   status?: $Enums.WidgetStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -389,6 +402,7 @@ export type WidgetUncheckedCreateInput = {
   presence?: string | null
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
+  requireLeadForm?: boolean
   status?: $Enums.WidgetStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -407,6 +421,7 @@ export type WidgetUpdateInput = {
   presence?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
+  requireLeadForm?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -427,6 +442,7 @@ export type WidgetUncheckedUpdateInput = {
   presence?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
+  requireLeadForm?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -446,6 +462,7 @@ export type WidgetCreateManyInput = {
   presence?: string | null
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
+  requireLeadForm?: boolean
   status?: $Enums.WidgetStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -464,6 +481,7 @@ export type WidgetUpdateManyMutationInput = {
   presence?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
+  requireLeadForm?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -483,6 +501,7 @@ export type WidgetUncheckedUpdateManyInput = {
   presence?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
+  requireLeadForm?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -515,6 +534,7 @@ export type WidgetCountOrderByAggregateInput = {
   presence?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
+  requireLeadForm?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -533,6 +553,7 @@ export type WidgetMaxOrderByAggregateInput = {
   logo?: Prisma.SortOrder
   presence?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
+  requireLeadForm?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -551,6 +572,7 @@ export type WidgetMinOrderByAggregateInput = {
   logo?: Prisma.SortOrder
   presence?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
+  requireLeadForm?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -614,6 +636,7 @@ export type WidgetCreateWithoutAgentInput = {
   presence?: string | null
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
+  requireLeadForm?: boolean
   status?: $Enums.WidgetStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -632,6 +655,7 @@ export type WidgetUncheckedCreateWithoutAgentInput = {
   presence?: string | null
   logoUrl?: string | null
   allowedDomains?: Prisma.WidgetCreateallowedDomainsInput | string[]
+  requireLeadForm?: boolean
   status?: $Enums.WidgetStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -666,6 +690,7 @@ export type WidgetUpdateWithoutAgentInput = {
   presence?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
+  requireLeadForm?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -684,6 +709,7 @@ export type WidgetUncheckedUpdateWithoutAgentInput = {
   presence?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.WidgetUpdateallowedDomainsInput | string[]
+  requireLeadForm?: Prisma.BoolFieldUpdateOperationsInput | boolean
   status?: Prisma.EnumWidgetStatusFieldUpdateOperationsInput | $Enums.WidgetStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -705,6 +731,7 @@ export type WidgetSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   presence?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
+  requireLeadForm?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -725,6 +752,7 @@ export type WidgetSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   presence?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
+  requireLeadForm?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -745,6 +773,7 @@ export type WidgetSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   presence?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
+  requireLeadForm?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -765,12 +794,13 @@ export type WidgetSelectScalar = {
   presence?: boolean
   logoUrl?: boolean
   allowedDomains?: boolean
+  requireLeadForm?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WidgetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "agentId" | "name" | "primaryColor" | "welcomeMessage" | "position" | "size" | "movable" | "buttonPosition" | "logo" | "presence" | "logoUrl" | "allowedDomains" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["widget"]>
+export type WidgetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "agentId" | "name" | "primaryColor" | "welcomeMessage" | "position" | "size" | "movable" | "buttonPosition" | "logo" | "presence" | "logoUrl" | "allowedDomains" | "requireLeadForm" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["widget"]>
 export type WidgetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   agent?: boolean | Prisma.AgentDefaultArgs<ExtArgs>
 }
@@ -800,6 +830,7 @@ export type $WidgetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     presence: string | null
     logoUrl: string | null
     allowedDomains: string[]
+    requireLeadForm: boolean
     status: $Enums.WidgetStatus
     createdAt: Date
     updatedAt: Date
@@ -1240,6 +1271,7 @@ export interface WidgetFieldRefs {
   readonly presence: Prisma.FieldRef<"Widget", 'String'>
   readonly logoUrl: Prisma.FieldRef<"Widget", 'String'>
   readonly allowedDomains: Prisma.FieldRef<"Widget", 'String[]'>
+  readonly requireLeadForm: Prisma.FieldRef<"Widget", 'Boolean'>
   readonly status: Prisma.FieldRef<"Widget", 'WidgetStatus'>
   readonly createdAt: Prisma.FieldRef<"Widget", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Widget", 'DateTime'>

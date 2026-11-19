@@ -53,6 +53,10 @@ export class UpsertWidgetDto {
   movable?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  requireLeadForm?: boolean;
+
+  @IsOptional()
   @IsUrl()
   logoUrl?: string;
 

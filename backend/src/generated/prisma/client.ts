@@ -90,6 +90,11 @@ export type Message = Prisma.MessageModel
  */
 export type Widget = Prisma.WidgetModel
 /**
+ * Model Lead
+ * 
+ */
+export type Lead = Prisma.LeadModel
+/**
  * Model Plan
  * 
  */

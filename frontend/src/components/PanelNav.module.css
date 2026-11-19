@@ -1,0 +1,36 @@
+.nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid #e2deea;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  color: #0c061b;
+  font-size: 0.85rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.nav a:hover {
+  background: #f4effd;
+  color: #4b21a6;
+}
+
+.nav a[aria-current='page'] {
+  background: #6d35d6;
+  color: #fff;
+}
+
+.nav a:focus-visible {
+  outline: 3px solid rgba(109, 53, 214, 0.35);
+  outline-offset: 2px;
+}

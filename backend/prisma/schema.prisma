@@ -131,6 +131,7 @@ model Company {
   agents        Agent[]
   conversations Conversation[]
   subscriptions Subscription[]
+  leads         Lead[]
 
   @@index([status])
   @@index([contactEmail])
@@ -174,6 +175,7 @@ model Agent {
   knowledgeBase   KnowledgeBase?
   widget          Widget?
   conversations   Conversation[]
+  leads           Lead[]
 
   @@index([companyId])
   @@index([companyId, status])
@@ -271,6 +273,7 @@ model Conversation {
   company        Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
   agent          Agent     @relation(fields: [agentId], references: [id], onDelete: Restrict)
   messages       Message[]
+  leads          Lead[]
 
   // The application must ensure agent.companyId matches companyId.
   @@index([companyId])
@@ -311,6 +314,7 @@ model Widget {
   presence        String?      @default("online")
   logoUrl         String?
   allowedDomains  String[]     @default([])
+  requireLeadForm Boolean      @default(false)
   status          WidgetStatus @default(INACTIVE)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -319,6 +323,27 @@ model Widget {
 
   @@index([status])
   @@map("widgets")
+}
+
+model Lead {
+  id             String   @id @default(uuid()) @db.Uuid
+  companyId      String   @db.Uuid
+  agentId        String   @db.Uuid
+  conversationId String?  @db.Uuid
+  name           String
+  email          String?
+  phone          String?
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  agent        Agent         @relation(fields: [agentId], references: [id], onDelete: Restrict)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([agentId])
+  @@index([companyId, createdAt])
+  @@map("leads")
 }
 
 model Plan {

@@ -7,6 +7,7 @@ import { CompaniesModule } from './companies/companies.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { DatabaseModule } from './database/database.module';
 import { DocumentsModule } from './documents/documents.module';
+import { LeadsModule } from './leads/leads.module';
 import { TrainingModule } from './training/training.module';
 import { UsersModule } from './users/users.module';
 import { WidgetsModule } from './widgets/widgets.module';
@@ -22,6 +23,7 @@ import { WidgetsModule } from './widgets/widgets.module';
     TrainingModule,
     ConversationsModule,
     WidgetsModule,
+    LeadsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

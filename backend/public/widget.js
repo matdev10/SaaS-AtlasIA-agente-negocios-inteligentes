@@ -1,18 +1,22 @@
-
 (function () {
-  "use strict";
+  'use strict';
 
   var current = document.currentScript;
-  if (!current || document.getElementById("atlasia-root")) return;
+  if (!current || document.getElementById('atlasia-root')) return;
 
-  var widgetId = current.getAttribute("data-atlasia-widget");
-  var apiBase = (current.getAttribute("data-atlasia-api") || "").replace(/\/$/, "");
-  var welcomeOverride = (current.getAttribute("data-atlasia-welcome") || "").trim();
-  var previewMode = current.getAttribute("data-atlasia-preview") === "true";
+  var widgetId = current.getAttribute('data-atlasia-widget');
+  var apiBase = (current.getAttribute('data-atlasia-api') || '').replace(
+    /\/$/,
+    '',
+  );
+  var welcomeOverride = (
+    current.getAttribute('data-atlasia-welcome') || ''
+  ).trim();
+  var previewMode = current.getAttribute('data-atlasia-preview') === 'true';
   var liveWelcome = welcomeOverride;
 
   if (!widgetId || !apiBase) {
-    console.error("[AtlasIA] Faltan los atributos del widget o la API.");
+    console.error('[AtlasIA] Faltan los atributos del widget o la API.');
     return;
   }
 
@@ -23,6 +27,8 @@
     conversationId: null,
     config: null,
     transcript: [],
+    requireLeadForm: false,
+    lead: null,
   };
 
   function css(color) {
@@ -47,7 +53,7 @@
         height: 50px;
         display: grid;
         place-items: center;
-        border: 1px solid rgba(190,145,255,.55);
+        border: 1px solid rgba(0, 0, 0, 0.55);
         border-radius: 39px;
         color: white;
         background: linear-gradient(145deg,#8338ec,#35105f);
@@ -392,6 +398,53 @@
         border-color: rgba(165,119,255,.6);
       }
 
+      #atlasia-lead {
+        display: grid;
+        gap: 8px;
+        margin: 0 16px;
+      }
+
+      #atlasia-lead[hidden],
+      #atlasia-form[hidden] { display: none !important; }
+
+      #atlasia-lead p {
+        margin: 0;
+        color: #aaa1bc;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      #atlasia-lead input {
+        width: 100%;
+        padding: 10px 12px;
+        color: white;
+        background: #171321;
+        border: 1px solid rgba(164,111,255,.4);
+        border-radius: 12px;
+        outline: none;
+        font-size: 12px;
+      }
+
+      #atlasia-lead input::placeholder { color: #827991; }
+
+      #atlasia-lead button {
+        padding: 10px 13px;
+        color: white;
+        background: linear-gradient(135deg,${color},#6324d5);
+        border: 0;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      #atlasia-lead button:disabled { opacity: .45; cursor: not-allowed; }
+
+      #atlasia-lead-error {
+        color: #f0a8a8;
+        font-size: 11px;
+      }
+
       #atlasia-form {
         display: flex;
         align-items: center;
@@ -518,9 +571,9 @@
 
     if (props) {
       Object.keys(props).forEach(function (key) {
-        if (key === "className") node.className = props[key];
-        else if (key === "text") node.textContent = props[key];
-        else if (key.slice(0, 2) === "on") {
+        if (key === 'className') node.className = props[key];
+        else if (key === 'text') node.textContent = props[key];
+        else if (key.slice(0, 2) === 'on') {
           node.addEventListener(key.slice(2).toLowerCase(), props[key]);
         } else {
           node.setAttribute(key, props[key]);
@@ -541,29 +594,29 @@
       '<circle cx="16" cy="16" r="10.5" stroke="currentColor" stroke-width="1.8"/>' +
       '<ellipse cx="16" cy="16" rx="4.8" ry="10.5" stroke="currentColor" stroke-width="1.8"/>' +
       '<path d="M6.2 16h19.6M8.4 11.4h15.2M8.4 20.6h15.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
-      "</svg>",
+      '</svg>',
     headset:
       '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true">' +
       '<path d="M6 18v-2a10 10 0 0 1 20 0v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
       '<rect x="4" y="17" width="5" height="8" rx="2" stroke="currentColor" stroke-width="1.8"/>' +
       '<rect x="23" y="17" width="5" height="8" rx="2" stroke="currentColor" stroke-width="1.8"/>' +
       '<path d="M25.5 25a4 4 0 0 1-4 4H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
-      "</svg>",
+      '</svg>',
     chat:
       '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true">' +
       '<path d="M8 21.5 5.5 26l5-1.8A10 10 0 1 0 8 21.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' +
       '<path d="M12 15h8M12 19h4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
-      "</svg>",
+      '</svg>',
   };
 
   var PRESENCE = {
-    online: { label: "En línea", color: "#22c55e" },
-    busy: { label: "Ocupado", color: "#ef4444" },
-    away: { label: "Ausente", color: "#f59e0b" },
-    offline: { label: "Desconectado", color: "#6b7280" },
+    online: { label: 'En línea', color: '#22c55e' },
+    busy: { label: 'Ocupado', color: '#ef4444' },
+    away: { label: 'Ausente', color: '#f59e0b' },
+    offline: { label: 'Desconectado', color: '#6b7280' },
   };
 
-  var currentLogo = "atlas";
+  var currentLogo = 'atlas';
 
   function currentMark() {
     return MARKS[currentLogo] || MARKS.atlas;
@@ -572,84 +625,124 @@
   var minimizeMark =
     '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true">' +
     '<path d="M7 16h18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>' +
-    "</svg>";
+    '</svg>';
 
-  var style = el("style");
-  style.textContent = css("#914cff");
+  var style = el('style');
+  style.textContent = css('#914cff');
 
-  var root = el("div", { id: "atlasia-root" });
-  var fab = el("button", {
-    id: "atlasia-fab",
-    type: "button",
-    "aria-label": "Abrir chat AtlasIA",
+  var root = el('div', { id: 'atlasia-root' });
+  var fab = el('button', {
+    id: 'atlasia-fab',
+    type: 'button',
+    'aria-label': 'Abrir chat AtlasIA',
   });
   fab.innerHTML = currentMark();
 
-  var panel = el("section", {
-    id: "atlasia-panel",
-    role: "dialog",
-    "aria-label": "Chat AtlasIA",
-    "aria-modal": "false",
+  var panel = el('section', {
+    id: 'atlasia-panel',
+    role: 'dialog',
+    'aria-label': 'Chat AtlasIA',
+    'aria-modal': 'false',
   });
 
-  var head = el("header", { id: "atlasia-head" });
-  var mark = el("div", { id: "atlasia-mark" });
+  var head = el('header', { id: 'atlasia-head' });
+  var mark = el('div', { id: 'atlasia-mark' });
   mark.innerHTML = currentMark();
-  var headCopy = el("div", { id: "atlasia-head-copy" });
-  var title = el("strong", { text: "" });
-  var subtitle = el("span");
-  var status = el("i", { id: "atlasia-status" });
-  var close = el("button", {
-    id: "atlasia-close",
-    type: "button",
-    "aria-label": "Minimizar chat",
+  var headCopy = el('div', { id: 'atlasia-head-copy' });
+  var title = el('strong', { text: '' });
+  var subtitle = el('span');
+  var status = el('i', { id: 'atlasia-status' });
+  var close = el('button', {
+    id: 'atlasia-close',
+    type: 'button',
+    'aria-label': 'Minimizar chat',
   });
   close.innerHTML = minimizeMark;
 
   subtitle.appendChild(status);
-  subtitle.appendChild(document.createTextNode("Conectando..."));
+  subtitle.appendChild(document.createTextNode('Conectando...'));
   headCopy.appendChild(title);
   headCopy.appendChild(subtitle);
   head.appendChild(mark);
   head.appendChild(headCopy);
   head.appendChild(close);
 
-  var messages = el("div", { id: "atlasia-messages", "aria-live": "polite" });
+  var messages = el('div', { id: 'atlasia-messages', 'aria-live': 'polite' });
 
-  var form = el("form", { id: "atlasia-form" });
-  var input = el("input", {
-    id: "atlasia-input",
-    type: "text",
-    placeholder: "Escribe tu mensaje...",
-    autocomplete: "off",
-    "aria-label": "Escribe tu mensaje",
-    maxlength: "4000",
+  var form = el('form', { id: 'atlasia-form' });
+  var input = el('input', {
+    id: 'atlasia-input',
+    type: 'text',
+    placeholder: 'Escribe tu mensaje...',
+    autocomplete: 'off',
+    'aria-label': 'Escribe tu mensaje',
+    maxlength: '4000',
   });
-  var send = el("button", {
-    id: "atlasia-send",
-    type: "submit",
-    text: "Enviar",
+  var send = el('button', {
+    id: 'atlasia-send',
+    type: 'submit',
+    text: 'Enviar',
   });
 
   form.appendChild(input);
   form.appendChild(send);
 
-  var footer = el("footer", { id: "atlasia-footer" });
-  var footerLeft = el("span");
-  footerLeft.appendChild(el("i", { id: "atlasia-footer-dot" }));
-  footerLeft.appendChild(document.createTextNode("Impulsado por Nuvcore"));
-  footer.appendChild(footerLeft);
-  footer.appendChild(el("span", { text: "AtlasIA · AI Assistant" }));
+  var leadForm = el('form', { id: 'atlasia-lead', hidden: 'hidden' });
+  var leadCopy = el('p', {
+    text: 'Dejanos tus datos y seguimos la conversación.',
+  });
+  var leadName = el('input', {
+    type: 'text',
+    name: 'name',
+    placeholder: 'Nombre',
+    autocomplete: 'name',
+    'aria-label': 'Nombre',
+    maxlength: '120',
+    required: 'required',
+  });
+  var leadEmail = el('input', {
+    type: 'email',
+    name: 'email',
+    placeholder: 'Correo',
+    autocomplete: 'email',
+    'aria-label': 'Correo',
+    maxlength: '200',
+  });
+  var leadPhone = el('input', {
+    type: 'tel',
+    name: 'phone',
+    placeholder: 'WhatsApp',
+    autocomplete: 'tel',
+    'aria-label': 'WhatsApp',
+    maxlength: '40',
+  });
+  var leadError = el('p', { id: 'atlasia-lead-error' });
+  leadError.hidden = true;
+  var leadSubmit = el('button', { type: 'submit', text: 'Continuar' });
+  leadForm.appendChild(leadCopy);
+  leadForm.appendChild(leadName);
+  leadForm.appendChild(leadEmail);
+  leadForm.appendChild(leadPhone);
+  leadForm.appendChild(leadError);
+  leadForm.appendChild(leadSubmit);
 
-  var resizeHandle = el("button", {
-    id: "atlasia-resize",
-    type: "button",
-    "aria-label": "Cambiar tamaño del chat",
+  var footer = el('footer', { id: 'atlasia-footer' });
+  var footerLeft = el('span');
+  footerLeft.appendChild(el('i', { id: 'atlasia-footer-dot' }));
+  footerLeft.appendChild(document.createTextNode('Impulsado por Nuvcore'));
+  footer.appendChild(footerLeft);
+  footer.appendChild(el('span', { text: 'AtlasIA · AI Assistant' }));
+
+  var resizeHandle = el('button', {
+    id: 'atlasia-resize',
+    type: 'button',
+    'aria-label': 'Cambiar tamaño del chat',
   });
 
   panel.appendChild(head);
   panel.appendChild(messages);
   panel.appendChild(resizeHandle);
+  panel.appendChild(leadForm);
   panel.appendChild(form);
   panel.appendChild(footer);
 
@@ -658,21 +751,60 @@
   root.appendChild(fab);
   document.body.appendChild(root);
 
-  var historyKey = "atlasia-chat:" + widgetId;
+  var historyKey = 'atlasia-chat:' + widgetId;
+  var leadKey = 'atlasia-lead:' + widgetId;
   var typingRow = null;
+
+  function readLead() {
+    if (previewMode) return null;
+    try {
+      var raw = localStorage.getItem(leadKey);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (!data || typeof data.name !== 'string' || !data.name.trim()) return null;
+      if (!data.email && !data.phone) return null;
+      return {
+        id: typeof data.id === 'string' ? data.id : '',
+        name: data.name.trim(),
+        email: typeof data.email === 'string' ? data.email : '',
+        phone: typeof data.phone === 'string' ? data.phone : '',
+        synced: data.synced === true,
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeLead(lead) {
+    if (previewMode) return;
+    try {
+      localStorage.setItem(leadKey, JSON.stringify(lead));
+    } catch (error) {}
+  }
+
+  function applyLeadGate() {
+    var needsLead = state.requireLeadForm && !state.lead;
+    leadForm.hidden = !needsLead;
+    form.hidden = needsLead;
+  }
+
+  function showLeadError(message) {
+    leadError.hidden = !message;
+    leadError.textContent = message || '';
+  }
 
   function escapeHtml(value) {
     return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   function formatMessage(text) {
-    var safe = escapeHtml(text).replace(/\r\n|\r/g, "\n");
-    safe = safe.replace(/\*\*((?:(?!\*\*).)+)\*\*/g, "<strong>$1</strong>");
-    return safe.replace(/\n/g, "<br>");
+    var safe = escapeHtml(text).replace(/\r\n|\r/g, '\n');
+    safe = safe.replace(/\*\*((?:(?!\*\*).)+)\*\*/g, '<strong>$1</strong>');
+    return safe.replace(/\n/g, '<br>');
   }
 
   function readHistory() {
@@ -682,19 +814,24 @@
       if (!raw) return null;
       var data = JSON.parse(raw);
       if (!data || !Array.isArray(data.messages)) return null;
-      var saved = data.messages.filter(function (item) {
-        return (
-          item &&
-          (item.role === "visitor" || item.role === "assistant") &&
-          typeof item.text === "string" &&
-          item.text
-        );
-      }).slice(-40);
+      var saved = data.messages
+        .filter(function (item) {
+          return (
+            item &&
+            (item.role === 'visitor' || item.role === 'assistant') &&
+            typeof item.text === 'string' &&
+            item.text
+          );
+        })
+        .slice(-40);
       if (!saved.length) return null;
       var conversationId = data.conversationId;
-      var validId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      var validId =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       return {
-        conversationId: validId.test(conversationId || "") ? conversationId : null,
+        conversationId: validId.test(conversationId || '')
+          ? conversationId
+          : null,
         messages: saved,
       };
     } catch (error) {
@@ -714,25 +851,28 @@
       if (state.transcript.length < 2) return;
       state.transcript = state.transcript.slice(-20);
       try {
-        localStorage.setItem(historyKey, JSON.stringify({
-          conversationId: state.conversationId,
-          messages: state.transcript,
-        }));
-      } catch (retryError) { }
+        localStorage.setItem(
+          historyKey,
+          JSON.stringify({
+            conversationId: state.conversationId,
+            messages: state.transcript,
+          }),
+        );
+      } catch (retryError) {}
     }
   }
 
   function addBubble(role, text, persist) {
-    var row = el("div", { className: "atlasia-row " + role });
+    var row = el('div', { className: 'atlasia-row ' + role });
 
-    if (role === "assistant") {
-      var avatar = el("div", { className: "atlasia-avatar" });
+    if (role === 'assistant') {
+      var avatar = el('div', { className: 'atlasia-avatar' });
       avatar.innerHTML = currentMark();
       row.appendChild(avatar);
     }
 
-    var bubble = el("div", {
-      className: "atlasia-bubble atlasia-" + role,
+    var bubble = el('div', {
+      className: 'atlasia-bubble atlasia-' + role,
     });
     bubble.innerHTML = formatMessage(text);
     row.appendChild(bubble);
@@ -743,7 +883,7 @@
     if (persist !== false) {
       state.transcript.push({
         role: role,
-        text: String(text || ""),
+        text: String(text || ''),
       });
       if (state.transcript.length > 40) {
         state.transcript = state.transcript.slice(-40);
@@ -754,20 +894,20 @@
 
   function showTyping() {
     hideTyping();
-    typingRow = el("div", {
-      className: "atlasia-row assistant",
-      "aria-label": "Escribiendo",
+    typingRow = el('div', {
+      className: 'atlasia-row assistant',
+      'aria-label': 'Escribiendo',
     });
-    var avatar = el("div", { className: "atlasia-avatar" });
+    var avatar = el('div', { className: 'atlasia-avatar' });
     avatar.innerHTML = currentMark();
-    var bubble = el("div", {
-      className: "atlasia-bubble atlasia-assistant atlasia-typing",
+    var bubble = el('div', {
+      className: 'atlasia-bubble atlasia-assistant atlasia-typing',
     });
-    bubble.appendChild(el("span", { text: "escribiendo..." }));
-    var dots = el("span", { className: "atlasia-dots", "aria-hidden": "true" });
-    dots.appendChild(el("i"));
-    dots.appendChild(el("i"));
-    dots.appendChild(el("i"));
+    bubble.appendChild(el('span', { text: 'escribiendo...' }));
+    var dots = el('span', { className: 'atlasia-dots', 'aria-hidden': 'true' });
+    dots.appendChild(el('i'));
+    dots.appendChild(el('i'));
+    dots.appendChild(el('i'));
     bubble.appendChild(dots);
     typingRow.appendChild(avatar);
     typingRow.appendChild(bubble);
@@ -786,19 +926,19 @@
     var svg = currentMark();
     fab.innerHTML = svg;
     mark.innerHTML = svg;
-    var avatars = messages.querySelectorAll(".atlasia-avatar");
+    var avatars = messages.querySelectorAll('.atlasia-avatar');
     for (var i = 0; i < avatars.length; i++) avatars[i].innerHTML = svg;
   }
 
   function paintPresence(key) {
     var item = PRESENCE[key] || PRESENCE.online;
     status.style.background = item.color;
-    status.style.boxShadow = "0 0 8px " + item.color;
+    status.style.boxShadow = '0 0 8px ' + item.color;
     subtitle.replaceChildren(status, document.createTextNode(item.label));
   }
 
   function applyBrand(logo, presence) {
-    if (logo === "headset" || logo === "atlas" || logo === "chat") {
+    if (logo === 'headset' || logo === 'atlas' || logo === 'chat') {
       currentLogo = logo;
     }
     paintLogos();
@@ -806,34 +946,35 @@
   }
 
   function applyLiveWelcome(text) {
-    var next = String(text || "").trim().slice(0, 500);
+    var next = String(text || '')
+      .trim()
+      .slice(0, 500);
     if (!next) return;
     liveWelcome = next;
-    var bubble = messages.querySelector(".atlasia-bubble.atlasia-assistant");
+    var bubble = messages.querySelector('.atlasia-bubble.atlasia-assistant');
     if (bubble) bubble.innerHTML = formatMessage(next);
   }
 
   if (previewMode) {
-    window.addEventListener("message", function (event) {
+    window.addEventListener('message', function (event) {
       var data = event.data;
       if (!data) return;
-      if (data.type === "atlasia-set-welcome") applyLiveWelcome(data.welcome);
-      if (data.type === "atlasia-set-brand") applyBrand(data.logo, data.status);
+      if (data.type === 'atlasia-set-welcome') applyLiveWelcome(data.welcome);
+      if (data.type === 'atlasia-set-brand') applyBrand(data.logo, data.status);
     });
   }
   function isTouchDevice() {
     return (
-      window.matchMedia("(pointer: coarse)").matches ||
-      "ontouchstart" in window
+      window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window
     );
   }
 
   function setOpen(open) {
     state.open = open;
-    panel.classList.toggle("open", open);
+    panel.classList.toggle('open', open);
     fab.setAttribute(
-      "aria-label",
-      open ? "Cerrar chat AtlasIA" : "Abrir chat AtlasIA"
+      'aria-label',
+      open ? 'Cerrar chat AtlasIA' : 'Abrir chat AtlasIA',
     );
     fab.innerHTML = currentMark();
 
@@ -844,19 +985,19 @@
     }
   }
 
-  fab.addEventListener("click", function () {
+  fab.addEventListener('click', function () {
     setOpen(!state.open);
   });
 
-  if (current.getAttribute("data-atlasia-open") === "true") {
+  if (current.getAttribute('data-atlasia-open') === 'true') {
     setOpen(true);
   }
 
-  close.addEventListener("click", function () {
+  close.addEventListener('click', function () {
     setOpen(false);
   });
 
-  var positionKey = "atlasia-panel-pos:" + widgetId;
+  var positionKey = 'atlasia-panel-pos:' + widgetId;
   var drag = null;
 
   function readSavedPosition() {
@@ -864,7 +1005,7 @@
       var raw = localStorage.getItem(positionKey);
       if (!raw) return null;
       var pos = JSON.parse(raw);
-      if (!pos || typeof pos.left !== "number" || typeof pos.top !== "number") {
+      if (!pos || typeof pos.left !== 'number' || typeof pos.top !== 'number') {
         return null;
       }
       return pos;
@@ -888,18 +1029,18 @@
   function placePanel(left, top, persist) {
     if (!panel.offsetWidth) return;
     var next = clampPanel(left, top);
-    panel.style.left = next.left + "px";
-    panel.style.top = next.top + "px";
-    panel.style.right = "auto";
-    panel.style.bottom = "auto";
-    panel.style.transform = "none";
-    panel.setAttribute("data-dragged", "true");
+    panel.style.left = next.left + 'px';
+    panel.style.top = next.top + 'px';
+    panel.style.right = 'auto';
+    panel.style.bottom = 'auto';
+    panel.style.transform = 'none';
+    panel.setAttribute('data-dragged', 'true');
 
     if (!persist) return;
 
     try {
       localStorage.setItem(positionKey, JSON.stringify(next));
-    } catch (error) { }
+    } catch (error) {}
   }
 
   function applySavedPosition() {
@@ -912,7 +1053,7 @@
   function endDrag(event) {
     if (!drag) return;
     drag = null;
-    panel.removeAttribute("data-dragging");
+    panel.removeAttribute('data-dragging');
 
     if (
       event &&
@@ -927,9 +1068,9 @@
   }
 
   function readSide(value) {
-    return value === "bottom-left" ||
-      value === "bottom-center" ||
-      value === "bottom-right"
+    return value === 'bottom-left' ||
+      value === 'bottom-center' ||
+      value === 'bottom-right'
       ? value
       : null;
   }
@@ -937,67 +1078,69 @@
   function applyAnchor() {
     var config = state.config || {};
     var button =
-      readSide(config.buttonPosition) || readSide(config.position) || "bottom-right";
+      readSide(config.buttonPosition) ||
+      readSide(config.position) ||
+      'bottom-right';
     var previous = null;
 
     try {
-      previous = localStorage.getItem("atlasia-panel-anchor:" + widgetId);
-    } catch (error) { }
+      previous = localStorage.getItem('atlasia-panel-anchor:' + widgetId);
+    } catch (error) {}
 
     if (previous && previous !== button) {
       try {
         localStorage.removeItem(positionKey);
-      } catch (error) { }
-      panel.removeAttribute("data-dragged");
+      } catch (error) {}
+      panel.removeAttribute('data-dragged');
     }
 
     try {
-      localStorage.setItem("atlasia-panel-anchor:" + widgetId, button);
-    } catch (error) { }
+      localStorage.setItem('atlasia-panel-anchor:' + widgetId, button);
+    } catch (error) {}
 
-    root.setAttribute("data-button", button);
-    if (panel.getAttribute("data-dragged") === "true") return;
+    root.setAttribute('data-button', button);
+    if (panel.getAttribute('data-dragged') === 'true') return;
 
-    panel.style.left = "";
-    panel.style.top = "";
-    panel.style.right = "";
-    panel.style.bottom = "";
-    panel.style.transform = "";
-    fab.style.left = "";
-    fab.style.right = "";
-    fab.style.bottom = "";
-    fab.style.transform = "";
+    panel.style.left = '';
+    panel.style.top = '';
+    panel.style.right = '';
+    panel.style.bottom = '';
+    panel.style.transform = '';
+    fab.style.left = '';
+    fab.style.right = '';
+    fab.style.bottom = '';
+    fab.style.transform = '';
   }
 
   function setMovable(enabled) {
     state.movable = !!enabled;
     if (state.movable) {
-      panel.setAttribute("data-movable", "true");
+      panel.setAttribute('data-movable', 'true');
       applySavedPosition();
       return;
     }
 
-    panel.removeAttribute("data-movable");
-    panel.removeAttribute("data-dragging");
+    panel.removeAttribute('data-movable');
+    panel.removeAttribute('data-dragging');
     drag = null;
-    if (panel.getAttribute("data-dragged") !== "true") {
+    if (panel.getAttribute('data-dragged') !== 'true') {
       applyAnchor();
       return;
     }
 
-    panel.removeAttribute("data-dragged");
-    panel.style.left = "";
-    panel.style.top = "";
-    panel.style.right = "";
-    panel.style.bottom = "";
-    panel.style.transform = "";
+    panel.removeAttribute('data-dragged');
+    panel.style.left = '';
+    panel.style.top = '';
+    panel.style.right = '';
+    panel.style.bottom = '';
+    panel.style.transform = '';
     applyAnchor();
   }
 
-  head.addEventListener("pointerdown", function (event) {
+  head.addEventListener('pointerdown', function (event) {
     if (!state.movable) return;
     if (event.button !== 0) return;
-    if (event.target.closest && event.target.closest("button")) return;
+    if (event.target.closest && event.target.closest('button')) return;
 
     var rect = panel.getBoundingClientRect();
     drag = {
@@ -1005,56 +1148,57 @@
       dy: event.clientY - rect.top,
     };
     placePanel(rect.left, rect.top, false);
-    panel.setAttribute("data-dragging", "true");
+    panel.setAttribute('data-dragging', 'true');
     try {
       head.setPointerCapture(event.pointerId);
-    } catch (error) { }
+    } catch (error) {}
     event.preventDefault();
   });
 
-  head.addEventListener("pointermove", function (event) {
+  head.addEventListener('pointermove', function (event) {
     if (!drag) return;
     placePanel(event.clientX - drag.dx, event.clientY - drag.dy, false);
   });
 
-  head.addEventListener("pointerup", endDrag);
-  head.addEventListener("pointercancel", endDrag);
+  head.addEventListener('pointerup', endDrag);
+  head.addEventListener('pointercancel', endDrag);
 
-  window.addEventListener("resize", function () {
-    if (panel.getAttribute("data-dragged") !== "true" || !panel.offsetWidth) return;
+  window.addEventListener('resize', function () {
+    if (panel.getAttribute('data-dragged') !== 'true' || !panel.offsetWidth)
+      return;
     var rect = panel.getBoundingClientRect();
     placePanel(rect.left, rect.top, true);
   });
 
-  var sizeKey = "atlasia-panel-size:" + widgetId;
-  var sizeOrder = ["sm", "md", "lg"];
-  var sizeLabel = { sm: "Chico", md: "Mediano", lg: "Grande" };
+  var sizeKey = 'atlasia-panel-size:' + widgetId;
+  var sizeOrder = ['sm', 'md', 'lg'];
+  var sizeLabel = { sm: 'Chico', md: 'Mediano', lg: 'Grande' };
 
   function readSavedSize() {
     try {
       var raw = localStorage.getItem(sizeKey);
-      if (raw === "sm" || raw === "md" || raw === "lg") return raw;
+      if (raw === 'sm' || raw === 'md' || raw === 'lg') return raw;
       if (raw) localStorage.removeItem(sizeKey);
-    } catch (error) { }
+    } catch (error) {}
     return null;
   }
 
   function applyWidgetSize(size, persist) {
-    if (size !== "sm" && size !== "md") size = "lg";
-    panel.style.width = "";
-    panel.style.height = "";
-    panel.removeAttribute("data-resized");
-    panel.setAttribute("data-size", size);
+    if (size !== 'sm' && size !== 'md') size = 'lg';
+    panel.style.width = '';
+    panel.style.height = '';
+    panel.removeAttribute('data-resized');
+    panel.setAttribute('data-size', size);
     resizeHandle.setAttribute(
-      "aria-label",
-      "Tamaño " + sizeLabel[size] + ". Cambiar tamaño"
+      'aria-label',
+      'Tamaño ' + sizeLabel[size] + '. Cambiar tamaño',
     );
     resizeHandle.title = sizeLabel[size];
     if (!persist) return;
 
     try {
       localStorage.setItem(sizeKey, size);
-    } catch (error) { }
+    } catch (error) {}
   }
 
   function applySavedSize() {
@@ -1063,30 +1207,133 @@
     applyWidgetSize(saved, false);
   }
 
-  resizeHandle.addEventListener("click", function (event) {
+  resizeHandle.addEventListener('click', function (event) {
     event.preventDefault();
     event.stopPropagation();
-    var current = panel.getAttribute("data-size");
+    var current = panel.getAttribute('data-size');
     var index = sizeOrder.indexOf(current);
     if (index < 0) index = 2;
     applyWidgetSize(sizeOrder[(index + 1) % sizeOrder.length], true);
   });
 
-  form.addEventListener("submit", function (event) {
+  form.addEventListener('submit', function (event) {
     event.preventDefault();
     sendMessage(input.value);
   });
 
+  leadForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (state.busy) return;
+
+    var name = leadName.value.trim();
+    var email = leadEmail.value.trim();
+    var phone = leadPhone.value.trim();
+    var digits = phone.replace(/\D/g, '');
+
+    if (!name) {
+      showLeadError('El nombre es obligatorio.');
+      leadName.focus();
+      return;
+    }
+
+    if (!email && !phone) {
+      showLeadError('Indicá un correo o un WhatsApp.');
+      leadEmail.focus();
+      return;
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showLeadError('El correo no es válido.');
+      leadEmail.focus();
+      return;
+    }
+
+    if (phone && digits.length < 6) {
+      showLeadError('El WhatsApp es demasiado corto.');
+      leadPhone.focus();
+      return;
+    }
+
+    showLeadError('');
+    state.busy = true;
+    leadSubmit.disabled = true;
+
+    var payload = { name: name };
+    if (email) payload.email = email;
+    if (phone) payload.phone = phone;
+    if (state.conversationId) payload.conversationId = state.conversationId;
+
+    fetch(
+      apiBase + '/public/widgets/' + encodeURIComponent(widgetId) + '/leads',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    )
+      .then(function (res) {
+        if (!res.ok) {
+          return res.text().then(function () {
+            throw new Error('HTTP ' + res.status);
+          });
+        }
+        return res.json();
+      })
+      .then(function (data) {
+        state.lead = {
+          id: data && data.id ? data.id : '',
+          name: name,
+          email: email,
+          phone: phone,
+          synced: false,
+        };
+        writeLead(state.lead);
+        applyLeadGate();
+        if (state.open && !isTouchDevice()) input.focus();
+      })
+      .catch(function (error) {
+        console.error('[AtlasIA] Error al guardar el contacto:', error);
+        showLeadError('No pude guardar tus datos. Intentá de nuevo.');
+      })
+      .finally(function () {
+        state.busy = false;
+        leadSubmit.disabled = false;
+      });
+  });
+
+  function syncLead(text) {
+    if (previewMode || !state.lead || !state.lead.id || state.lead.synced) return;
+    var body = { notes: String(text || '').slice(0, 2000) };
+    if (state.conversationId) body.conversationId = state.conversationId;
+    state.lead.synced = true;
+    writeLead(state.lead);
+    fetch(
+      apiBase +
+        '/public/widgets/' +
+        encodeURIComponent(widgetId) +
+        '/leads/' +
+        encodeURIComponent(state.lead.id),
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+    ).catch(function () {
+      state.lead.synced = false;
+      writeLead(state.lead);
+    });
+  }
+
   function sendMessage(text) {
-    text = String(text || "").trim();
+    text = String(text || '').trim();
 
     if (!text || state.busy) return;
 
     state.busy = true;
     send.disabled = true;
     input.disabled = true;
-    addBubble("visitor", text);
-    input.value = "";
+    addBubble('visitor', text);
+    input.value = '';
     showTyping();
 
     var payload = { message: text };
@@ -1095,18 +1342,23 @@
       payload.conversationId = state.conversationId;
     }
 
+    if (state.lead && state.lead.name) {
+      payload.visitorName = state.lead.name;
+      payload.visitorContact = state.lead.email || state.lead.phone || undefined;
+    }
+
     fetch(
-      apiBase + "/public/widgets/" + encodeURIComponent(widgetId) + "/chat",
+      apiBase + '/public/widgets/' + encodeURIComponent(widgetId) + '/chat',
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      }
+      },
     )
       .then(function (res) {
         if (!res.ok) {
           return res.text().then(function () {
-            throw new Error("HTTP " + res.status);
+            throw new Error('HTTP ' + res.status);
           });
         }
 
@@ -1119,24 +1371,28 @@
           writeHistory();
         }
 
+        syncLead(text);
+
         // Mantiene el contrato de respuesta utilizado por el widget actual.
         var list = Array.isArray(data.messages) ? data.messages : [];
         var last = list.length ? list[list.length - 1] : null;
 
-        if (last && last.role === "ASSISTANT" && last.content) {
-          addBubble("assistant", last.content);
+        if (last && last.role === 'ASSISTANT' && last.content) {
+          addBubble('assistant', last.content);
         } else if (data.reply || data.response || data.answer) {
-          addBubble("assistant", data.reply || data.response || data.answer);
+          addBubble('assistant', data.reply || data.response || data.answer);
         } else {
-          throw new Error("La respuesta de la API no contiene un mensaje reconocible.");
+          throw new Error(
+            'La respuesta de la API no contiene un mensaje reconocible.',
+          );
         }
       })
       .catch(function (error) {
         hideTyping();
-        console.error("[AtlasIA] Error de chat:", error);
+        console.error('[AtlasIA] Error de chat:', error);
         addBubble(
-          "assistant",
-          "No pude obtener una respuesta en este momento. Intenta nuevamente en unos segundos."
+          'assistant',
+          'No pude obtener una respuesta en este momento. Intenta nuevamente en unos segundos.',
         );
       })
       .finally(function () {
@@ -1149,34 +1405,37 @@
       });
   }
 
-  fetch(apiBase + "/public/widgets/" + encodeURIComponent(widgetId))
+  fetch(apiBase + '/public/widgets/' + encodeURIComponent(widgetId))
     .then(function (res) {
-      if (!res.ok) throw new Error("Widget no disponible: HTTP " + res.status);
+      if (!res.ok) throw new Error('Widget no disponible: HTTP ' + res.status);
       return res.json();
     })
     .then(function (config) {
       state.config = config;
 
-      var color = /^#[0-9a-f]{6}$/i.test(config.primaryColor || "")
+      var color = /^#[0-9a-f]{6}$/i.test(config.primaryColor || '')
         ? config.primaryColor
-        : "#914cff";
+        : '#914cff';
 
       style.textContent = css(color);
       title.textContent =
         (config.agent && config.agent.company && config.agent.company.name) ||
         (config.agent && config.agent.name) ||
-        "Atlas IA";
+        'Atlas IA';
 
       applyBrand(config.logo, config.presence);
+      state.requireLeadForm = config.requireLeadForm === true;
+      state.lead = readLead();
+      applyLeadGate();
 
       if (previewMode) {
-        window.parent.postMessage({ type: "atlasia-ready" }, "*");
+        window.parent.postMessage({ type: 'atlasia-ready' }, '*');
       }
 
       var welcome =
         liveWelcome ||
         config.welcomeMessage ||
-        "¡Hola! ¿En qué te puedo ayudar?";
+        '¡Hola! ¿En qué te puedo ayudar?';
 
       var saved = readHistory();
       if (saved) {
@@ -1186,27 +1445,27 @@
         });
         state.transcript = saved.messages.slice();
       } else {
-        addBubble("assistant", welcome);
+        addBubble('assistant', welcome);
       }
 
       applyWidgetSize(
         readSavedSize() ||
-        (config.size === "sm" || config.size === "md" ? config.size : "lg"),
-        false
+          (config.size === 'sm' || config.size === 'md' ? config.size : 'lg'),
+        false,
       );
       setMovable(config.movable !== false);
       applyAnchor();
     })
     .catch(function (error) {
-      console.error("[AtlasIA] No se pudo cargar la configuración:", error);
-      subtitle.replaceChildren(document.createTextNode("No disponible"));
+      console.error('[AtlasIA] No se pudo cargar la configuración:', error);
+      subtitle.replaceChildren(document.createTextNode('No disponible'));
       if (previewMode) {
-        window.parent.postMessage({ type: "atlasia-ready" }, "*");
+        window.parent.postMessage({ type: 'atlasia-ready' }, '*');
       }
       addBubble(
-        "assistant",
-        "No pude cargar la configuración del asistente. Intenta recargar la página.",
-        false
+        'assistant',
+        'No pude cargar la configuración del asistente. Intenta recargar la página.',
+        false,
       );
     });
 })();

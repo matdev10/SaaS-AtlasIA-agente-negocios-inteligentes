@@ -27,6 +27,7 @@ const widgetSelect = {
   presence: true,
   logoUrl: true,
   allowedDomains: true,
+  requireLeadForm: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -80,6 +81,7 @@ export class WidgetsService {
         presence: data.presence ?? 'online',
         logoUrl: data.logoUrl,
         allowedDomains: allowedDomains ?? [],
+        requireLeadForm: data.requireLeadForm ?? false,
         status: data.status ?? WidgetStatus.INACTIVE,
       },
       update: {
@@ -140,6 +142,7 @@ export class WidgetsService {
         logo: true,
         presence: true,
         logoUrl: true,
+        requireLeadForm: true,
         agent: {
           select: {
             id: true,

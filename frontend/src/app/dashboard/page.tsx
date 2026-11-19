@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Fragment, FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { PanelNav } from '@/components/PanelNav';
 import {
   api,
   clearSession,
@@ -425,6 +426,7 @@ export default function DashboardPage() {
   const topbar = (
     <header className={dash.topbar}>
       {brandBlock}
+      <PanelNav current="panel" />
       {logoutButton}
     </header>
   );
@@ -444,7 +446,10 @@ export default function DashboardPage() {
       ) : (
         <div className={dash.stack}>
           <section className={dash.hero}>
-            <div className={dash.heroTools}>{logoutButton}</div>
+            <div className={dash.heroTools}>
+              <PanelNav current="panel" />
+              {logoutButton}
+            </div>
             <div className={dash.heroBody}>
               <div className={dash.heroMain}>
                 <p className={dash.eyebrow}>Perfil de empresa</p>

@@ -1,15 +1,12 @@
-
-
 /* =========================================================
    ATLASIA — AGENT DETAIL
    Premium SaaS / Midnight / Electric Violet
 ========================================================= */
 
-
 .controls {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -23,10 +20,10 @@
 }
 
 .controlLabel {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.65);
-  min-width: 64px;
+  min-width: 54px;
 }
 
 .segmented {
@@ -34,23 +31,25 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   max-width: 100%;
-  padding: 3px;
+  padding: 2px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .segment {
-  padding: 6px 12px;
+  padding: 4px 8px;
   border: 0;
   border-radius: 999px;
   background: transparent;
   color: rgba(255, 255, 255, 0.8);
   font: inherit;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .segment:hover:not(:disabled) {
@@ -66,6 +65,82 @@
 .segment:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.switchText {
+  display: block;
+  margin-top: 2px;
+  max-width: 28ch;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.switch {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.switch input:disabled {
+  cursor: not-allowed;
+}
+
+.switchTrack {
+  display: block;
+  width: 44px;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.switchTrack::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.switch input:checked + .switchTrack {
+  border-color: #7c2fe0;
+  background: #7c2fe0;
+}
+
+.switch input:checked + .switchTrack::after {
+  transform: translateX(18px);
+}
+
+.switch input:focus-visible + .switchTrack {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .controlActions {
@@ -84,8 +159,6 @@
   color: #4ade80;
   text-align: right;
 }
-
-
 
 .page {
   --ink: #171321;
@@ -407,8 +480,8 @@
 
 .agentPane .previewFrame {
   flex: 1 0 auto;
-  height: 920px;
-  min-height: 920px;
+  height: 620px;
+  min-height: 620px;
   border: 0;
 }
 
@@ -451,7 +524,7 @@
 }
 
 .sizeToggle::after {
-  content: '';
+  content: "";
   width: 0;
   height: 0;
   border-left: 4px solid transparent;
@@ -1264,7 +1337,6 @@
 }
 
 @media (max-width: 900px) {
-
   .metaRow {
     gap: 0.8rem;
   }
