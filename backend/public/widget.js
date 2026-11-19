@@ -22,6 +22,7 @@
     movable: false,
     conversationId: null,
     config: null,
+    transcript: [],
   };
 
   function css(color) {
@@ -304,8 +305,37 @@
         color: #eee8f8;
         font-size: 12px;
         line-height: 1.65;
-        white-space: pre-wrap;
         overflow-wrap: anywhere;
+      }
+
+      .atlasia-bubble strong { font-weight: 700; }
+
+      .atlasia-typing {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .atlasia-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .atlasia-dots i {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #c4b6de;
+        animation: atlasia-typing 1.1s infinite ease-in-out;
+      }
+
+      .atlasia-dots i:nth-child(2) { animation-delay: .15s; }
+      .atlasia-dots i:nth-child(3) { animation-delay: .3s; }
+
+      @keyframes atlasia-typing {
+        0%, 80%, 100% { opacity: .25; transform: translateY(0); }
+        40% { opacity: 1; transform: translateY(-3px); }
       }
 
       .atlasia-assistant {
@@ -478,6 +508,7 @@
 
       @media(prefers-reduced-motion:reduce) {
         #atlasia-fab { transition: none; }
+        .atlasia-dots i { animation: none; opacity: .75; }
       }
     `;
   }
@@ -627,7 +658,71 @@
   root.appendChild(fab);
   document.body.appendChild(root);
 
-  function addBubble(role, text) {
+  var historyKey = "atlasia-chat:" + widgetId;
+  var typingRow = null;
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function formatMessage(text) {
+    var safe = escapeHtml(text).replace(/\r\n|\r/g, "\n");
+    safe = safe.replace(/\*\*((?:(?!\*\*).)+)\*\*/g, "<strong>$1</strong>");
+    return safe.replace(/\n/g, "<br>");
+  }
+
+  function readHistory() {
+    if (previewMode) return null;
+    try {
+      var raw = localStorage.getItem(historyKey);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (!data || !Array.isArray(data.messages)) return null;
+      var saved = data.messages.filter(function (item) {
+        return (
+          item &&
+          (item.role === "visitor" || item.role === "assistant") &&
+          typeof item.text === "string" &&
+          item.text
+        );
+      }).slice(-40);
+      if (!saved.length) return null;
+      var conversationId = data.conversationId;
+      var validId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return {
+        conversationId: validId.test(conversationId || "") ? conversationId : null,
+        messages: saved,
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeHistory() {
+    if (previewMode) return;
+    var payload = JSON.stringify({
+      conversationId: state.conversationId,
+      messages: state.transcript.slice(-40),
+    });
+    try {
+      localStorage.setItem(historyKey, payload);
+    } catch (error) {
+      if (state.transcript.length < 2) return;
+      state.transcript = state.transcript.slice(-20);
+      try {
+        localStorage.setItem(historyKey, JSON.stringify({
+          conversationId: state.conversationId,
+          messages: state.transcript,
+        }));
+      } catch (retryError) { }
+    }
+  }
+
+  function addBubble(role, text, persist) {
     var row = el("div", { className: "atlasia-row " + role });
 
     if (role === "assistant") {
@@ -636,13 +731,55 @@
       row.appendChild(avatar);
     }
 
-    row.appendChild(el("div", {
+    var bubble = el("div", {
       className: "atlasia-bubble atlasia-" + role,
-      text: String(text || ""),
-    }));
+    });
+    bubble.innerHTML = formatMessage(text);
+    row.appendChild(bubble);
 
     messages.appendChild(row);
     messages.scrollTop = messages.scrollHeight;
+
+    if (persist !== false) {
+      state.transcript.push({
+        role: role,
+        text: String(text || ""),
+      });
+      if (state.transcript.length > 40) {
+        state.transcript = state.transcript.slice(-40);
+      }
+      writeHistory();
+    }
+  }
+
+  function showTyping() {
+    hideTyping();
+    typingRow = el("div", {
+      className: "atlasia-row assistant",
+      "aria-label": "Escribiendo",
+    });
+    var avatar = el("div", { className: "atlasia-avatar" });
+    avatar.innerHTML = currentMark();
+    var bubble = el("div", {
+      className: "atlasia-bubble atlasia-assistant atlasia-typing",
+    });
+    bubble.appendChild(el("span", { text: "escribiendo..." }));
+    var dots = el("span", { className: "atlasia-dots", "aria-hidden": "true" });
+    dots.appendChild(el("i"));
+    dots.appendChild(el("i"));
+    dots.appendChild(el("i"));
+    bubble.appendChild(dots);
+    typingRow.appendChild(avatar);
+    typingRow.appendChild(bubble);
+    messages.appendChild(typingRow);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function hideTyping() {
+    if (typingRow && typingRow.parentNode) {
+      typingRow.parentNode.removeChild(typingRow);
+    }
+    typingRow = null;
   }
 
   function paintLogos() {
@@ -673,7 +810,7 @@
     if (!next) return;
     liveWelcome = next;
     var bubble = messages.querySelector(".atlasia-bubble.atlasia-assistant");
-    if (bubble) bubble.textContent = next;
+    if (bubble) bubble.innerHTML = formatMessage(next);
   }
 
   if (previewMode) {
@@ -950,6 +1087,7 @@
     input.disabled = true;
     addBubble("visitor", text);
     input.value = "";
+    showTyping();
 
     var payload = { message: text };
 
@@ -975,8 +1113,10 @@
         return res.json();
       })
       .then(function (data) {
+        hideTyping();
         if (data.conversationId) {
           state.conversationId = data.conversationId;
+          writeHistory();
         }
 
         // Mantiene el contrato de respuesta utilizado por el widget actual.
@@ -992,6 +1132,7 @@
         }
       })
       .catch(function (error) {
+        hideTyping();
         console.error("[AtlasIA] Error de chat:", error);
         addBubble(
           "assistant",
@@ -999,6 +1140,7 @@
         );
       })
       .finally(function () {
+        hideTyping();
         state.busy = false;
         send.disabled = false;
         input.disabled = false;
@@ -1036,7 +1178,16 @@
         config.welcomeMessage ||
         "¡Hola! ¿En qué te puedo ayudar?";
 
-      addBubble("assistant", welcome);
+      var saved = readHistory();
+      if (saved) {
+        state.conversationId = saved.conversationId;
+        saved.messages.forEach(function (item) {
+          addBubble(item.role, item.text, false);
+        });
+        state.transcript = saved.messages.slice();
+      } else {
+        addBubble("assistant", welcome);
+      }
 
       applyWidgetSize(
         readSavedSize() ||
@@ -1054,7 +1205,8 @@
       }
       addBubble(
         "assistant",
-        "No pude cargar la configuración del asistente. Intenta recargar la página."
+        "No pude cargar la configuración del asistente. Intenta recargar la página.",
+        false
       );
     });
 })();
