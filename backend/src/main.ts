@@ -22,6 +22,10 @@ function resolveCorsOrigins() {
     'http://www.nuvcore.cl',
   ];
 
+  if (process.env.NODE_ENV !== 'production') {
+    defaults.push('http://192.168.1.87:3001');
+  }
+
   return [...new Set([...defaults, ...fromEnv])];
 }
 
