@@ -57,14 +57,14 @@
         border-radius: 39px;
         color: white;
         background: linear-gradient(145deg, #000000, #35105f);
-    box-shadow: 0px 0px 20px #6324d5;
+    box-shadow: 0px 0px 20px #ffffff;
     cursor: pointer;
     transition: transform .2s, box-shadow .2s;
       }
 
       #atlasia-fab:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 38px rgba(216, 22, 206, 0.5);
+        box-shadow: 0 0px 38px #6324d5;
       }
 
       #atlasia-root[data-button="bottom-left"] #atlasia-fab {
