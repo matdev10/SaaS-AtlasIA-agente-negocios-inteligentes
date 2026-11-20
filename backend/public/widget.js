@@ -56,15 +56,15 @@
         border: 1px solid rgba(0, 0, 0, 0.55);
         border-radius: 39px;
         color: white;
-        background: linear-gradient(145deg,#8338ec,#35105f);
-        box-shadow: 0 8px 35px rgba(70, 43, 222, 0.38);
-        cursor: pointer;
-        transition: transform .2s, box-shadow .2s;
+        background: linear-gradient(145deg, #000000, #35105f);
+    box-shadow: 0px 0px 20px #6324d5;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
       }
 
       #atlasia-fab:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 38px rgba(43, 165, 222, 0.5);
+        box-shadow: 0 12px 38px rgba(216, 22, 206, 0.5);
       }
 
       #atlasia-root[data-button="bottom-left"] #atlasia-fab {
@@ -761,7 +761,8 @@
       var raw = localStorage.getItem(leadKey);
       if (!raw) return null;
       var data = JSON.parse(raw);
-      if (!data || typeof data.name !== 'string' || !data.name.trim()) return null;
+      if (!data || typeof data.name !== 'string' || !data.name.trim())
+        return null;
       if (!data.email && !data.phone) return null;
       return {
         id: typeof data.id === 'string' ? data.id : '',
@@ -1302,7 +1303,8 @@
   });
 
   function syncLead(text) {
-    if (previewMode || !state.lead || !state.lead.id || state.lead.synced) return;
+    if (previewMode || !state.lead || !state.lead.id || state.lead.synced)
+      return;
     var body = { notes: String(text || '').slice(0, 2000) };
     if (state.conversationId) body.conversationId = state.conversationId;
     state.lead.synced = true;
@@ -1344,7 +1346,8 @@
 
     if (state.lead && state.lead.name) {
       payload.visitorName = state.lead.name;
-      payload.visitorContact = state.lead.email || state.lead.phone || undefined;
+      payload.visitorContact =
+        state.lead.email || state.lead.phone || undefined;
     }
 
     fetch(
