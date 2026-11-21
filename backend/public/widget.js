@@ -103,14 +103,14 @@
       #atlasia-root[data-button="bottom-right"] #atlasia-fab {
         left: auto;
         right: 20px;
-        bottom: 96px;
+        bottom: 20px;
         transform: none;
       }
 
       #atlasia-root[data-button="bottom-right"] #atlasia-panel {
         left: auto;
         right: 82px;
-        bottom: 96px;
+        bottom: 20px;
         max-width: calc(100vw - 104px);
         transform: none;
       }
@@ -121,7 +121,7 @@
         position: fixed;
         z-index: 2147483000;
         right: 82px;
-        bottom: 96px;
+        bottom: 20px;
         width: min(400px, calc(100vw - 24px));
         height: min(650px, calc(100dvh - 115px));
         display: none;
