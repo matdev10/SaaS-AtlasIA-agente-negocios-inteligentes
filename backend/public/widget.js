@@ -57,9 +57,9 @@
         border-radius: 39px;
         color: white;
         background: linear-gradient(145deg, #000000, #35105f);
-    box-shadow: 0px 0px 20px #ffffff;
-    cursor: pointer;
-    transition: transform .2s, box-shadow .2s;
+        box-shadow: 0px 0px 20px #ffffff;
+        cursor: pointer;
+        transition: transform .2s, box-shadow .2s;
       }
 
       #atlasia-fab:hover {
