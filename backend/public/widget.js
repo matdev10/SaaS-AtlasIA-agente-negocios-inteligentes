@@ -48,7 +48,7 @@
         position: fixed;
         z-index: 2147483001;
         right: 20px;
-        bottom: 96px;
+        bottom: 20px;
         width: 50px;
         height: 50px;
         display: grid;
